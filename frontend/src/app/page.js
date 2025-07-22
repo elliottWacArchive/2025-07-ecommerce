@@ -11,7 +11,7 @@ export default function Home() {
       </header>
 
       <section style={styles.selection}>
-        <h2 style={styles.selectionTitle}>SÉLECTION COFFRET</h2>
+        <h2 style={styles.selectionTitle}>SÉLECTION COFFRET </h2>
         <div style={styles.grid}>
           {[
             { brand: 'DIESEL', name: 'Only The Brave', price: '32,503455345432345643 €' },
