@@ -108,7 +108,7 @@ const styles = {
     color: '#000',
   },
   footer: {
-    marginTop: '60px',
+    marginTop: '69px',
     padding: '20px',
     backgroundColor: '#111',
     color: '#fff',
