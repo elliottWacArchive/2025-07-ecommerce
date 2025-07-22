@@ -34,7 +34,7 @@ export default function Home() {
         .page {
           margin: 0;
           padding: 0;
-          font-family: Arial, sans-serif;
+          font-family: Arial , sans-serif;
           background-color: #a7a7a7;
           min-height: 100vh;
         }
