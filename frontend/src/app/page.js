@@ -4,8 +4,8 @@ export default function Home() {
      
  <header className="bg-white border-b border-gray-300 py-6 text-center">
  <div className="text-4xl font-light tracking-widest">
- <span className="text-blue-600 font-bold text-5xl mr-2">[E]</span>
-          PARFUMS
+ <span className="text-blue-600 font-bold text-5xl mr-2"></span>
+         [EPI] PARFUMS
  </div>
  </header>
    
