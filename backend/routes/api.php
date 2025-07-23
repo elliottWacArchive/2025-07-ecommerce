@@ -8,6 +8,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-use App\Http\Controllers\fauxProductController;
 
-Route::get('./Api/fauxProductController.php', [\App\Http\Controllers\Api\FauxProductController::class, 'index']);
+use App\Http\Controllers\Api\ProductController;
+
+Route::get('/products', [ProductController::class, 'index']);
