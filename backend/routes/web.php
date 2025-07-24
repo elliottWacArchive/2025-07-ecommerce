@@ -7,3 +7,8 @@ Route::middleware(['auth', 'isadmin'])->group(function () {
         return view('admin.dashboard');  // ou autre vue admin
     });
 });
+
+Route::get('/test-cache-driver', function () {
+    return config('cache.default');
+});
+

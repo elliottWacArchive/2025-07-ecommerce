@@ -5,16 +5,21 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AuthController;
 
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/products', [ProductController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 });
 
-Route::middleware(['auth:sanctum',IsAdmin::class])->group(function () {
+Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () {
     Route::get('/admin/dashboard', function () {
         return response()->json(['message' => 'Welcome to the admin dashboard']);
     });
@@ -25,3 +30,4 @@ Route::middleware(['auth:sanctum',IsAdmin::class])->group(function () {
     Route::post('/admin/categories', [CategoryController::class, 'store']);
     Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy']);
 });
+
