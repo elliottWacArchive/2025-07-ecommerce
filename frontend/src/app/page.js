@@ -11,7 +11,7 @@ export default function Home() {
       .catch((err) =>
         console.error('Erreur sur le chargement des produits:', err)
       );
-  }, []);
+     }, []);
 
   return (
     <div style={styles.page}>
