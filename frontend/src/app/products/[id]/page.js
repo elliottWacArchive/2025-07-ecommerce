@@ -4,40 +4,98 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import Header from "../../components/Header";
+import Breadcrumb from "../../components/Breadcrumb";
+import ImageGallery from "../../components/ImageGallery";
+import ProductInfo from "../../components/ProductInfo";
+import QuantitySelector from "../../components/QuantitySelector";
+import ActionButtons from "../../components/ActionButtons";
 
 export default function ProductDetails() {
     const [product, setProduct] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [selectedImage, setSelectedImage] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
     const id = useParams();
     
     useEffect(() => {
         async function fetchProduct() {
             try {
+                setIsLoading(true);
                 const response = await axios.get(`http://localhost:8000/api/products/${id.id}`);
                 setProduct(response.data);
             } catch (error) {
                 console.error('Error fetching product:', error);
+            } finally {
+                setIsLoading(false);
             }
         }
         if (id?.id) {
             fetchProduct();
         }
     }, [id]);
-    
-    if (!product) {
-        return <div className="flex justify-center items-center h-96 text-lg font-semibold">Chargement...</div>;
+
+    const handleQuantityChange = (newQuantity) => {
+        if (newQuantity >= 1) {
+            setQuantity(newQuantity);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <>
+                <Header />
+                <div className="flex justify-center items-center h-96">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            </>
+        );
     }
+
+    if (!product) {
+        return (
+            <>
+                <Header />
+                <div className="flex justify-center items-center h-96 text-lg font-semibold text-gray-600">
+                    Produit non trouvé
+                </div>
+            </>
+        );
+    }
+
+    const productImages = [
+        product.image
+    ];
 
     return (
         <>
             <Header />
-            <main className="flex justify-center items-center min-h-[60vh] px-4 py-10">
-                <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full flex flex-col items-center">
-                    {product.image && (
-                        <img src={product.image} alt={product.name} className="w-40 h-40 object-contain mb-6 rounded" />
-                    )}
-                    <h1 className="text-2xl font-bold mb-4 text-center">{product.name}</h1>
-                    <p className="text-gray-700 mb-4 text-center">{product.description}</p>
-                    <p className="text-indigo-600 font-bold text-lg mb-2">Prix : {product.price} €</p>
+            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    <Breadcrumb productName={product.name} />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <ImageGallery 
+                            images={productImages}
+                            selectedImage={selectedImage}
+                            onImageSelect={setSelectedImage}
+                            productName={product.name}
+                        />
+
+                        {/* Informations produit */}
+                        <div className="space-y-6">
+                            <ProductInfo product={product} />
+                            
+                            <QuantitySelector 
+                                quantity={quantity} 
+                                onQuantityChange={handleQuantityChange} 
+                            />
+
+                            <ActionButtons 
+                                product={product} 
+                                quantity={quantity} 
+                            />
+                        </div>
+                    </div>
                 </div>
             </main>
         </>
