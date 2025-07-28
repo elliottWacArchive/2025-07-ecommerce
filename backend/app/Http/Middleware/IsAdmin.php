@@ -11,9 +11,12 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user() && Auth::user()->role === 'admin') {
+        $user = Auth::user();
+
+        if ($user && $user->role === 'admin') {
             return $next($request);
         }
+
         return response()->json(['error' => 'Unauthorized (admin only)'], 403);
     }
 }
