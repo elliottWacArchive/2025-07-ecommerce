@@ -173,7 +173,7 @@ const styles = {
     color: "white",
     padding: "12px 20px",
     borderRadius: "6px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)"  ,
     zIndex: 1000,
     transition: "opacity 0.3s ease",
     fontWeight: "bold",
