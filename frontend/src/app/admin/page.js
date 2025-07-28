@@ -49,7 +49,10 @@ export default function AdminPage() {
 
     return (
         <main style={{ padding: "2rem" }}>
-            <h1>Interface Admin</h1>
+            <button onClick={() => router.push("/admin/products")}>
+                Gérer les produits
+            </button>
+
             <h2>Catégories</h2>
             <ul>
                 {categories.map((cat) => (
