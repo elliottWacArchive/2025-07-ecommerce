@@ -11,9 +11,26 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const savedToken = localStorage.getItem("auth_token");
+        const savedUser = localStorage.getItem("auth_user");
+
         if (savedToken) {
             setToken(savedToken);
-            fetchUser(savedToken);
+
+            if (savedUser && savedUser !== "undefined") {
+                try {
+                    setUser(JSON.parse(savedUser));
+                    setLoading(false);
+                } catch (error) {
+                    console.error(
+                        "Erreur lors du parsing de l'utilisateur sauvegardé:",
+                        error
+                    );
+                    localStorage.removeItem("auth_user");
+                    fetchUser(savedToken);
+                }
+            } else {
+                fetchUser(savedToken);
+            }
         } else {
             setLoading(false);
         }
@@ -31,6 +48,12 @@ export function AuthProvider({ children }) {
             if (response.ok) {
                 const data = await response.json();
                 setUser(data.user);
+                if (data.user) {
+                    localStorage.setItem(
+                        "auth_user",
+                        JSON.stringify(data.user)
+                    );
+                }
             } else {
                 logout();
             }
@@ -61,6 +84,12 @@ export function AuthProvider({ children }) {
                 setToken(data.token);
                 setUser(data.user);
                 localStorage.setItem("auth_token", data.token);
+                if (data.user) {
+                    localStorage.setItem(
+                        "auth_user",
+                        JSON.stringify(data.user)
+                    );
+                }
                 return { success: true, message: data.message };
             } else {
                 return { success: false, message: data.message };
@@ -90,6 +119,12 @@ export function AuthProvider({ children }) {
                 setToken(data.token);
                 setUser(data.user);
                 localStorage.setItem("auth_token", data.token);
+                if (data.user) {
+                    localStorage.setItem(
+                        "auth_user",
+                        JSON.stringify(data.user)
+                    );
+                }
                 return { success: true, message: data.message };
             } else {
                 return { success: false, message: data.message };
@@ -120,6 +155,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         setToken(null);
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
     };
 
     const value = {
@@ -129,6 +165,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        isAdmin: user?.role === "admin",
     };
 
     return (

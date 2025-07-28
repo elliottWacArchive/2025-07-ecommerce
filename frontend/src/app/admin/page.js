@@ -2,55 +2,60 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminPage() {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState([]);
+    const { user, token, isAdmin, loading: authLoading } = useAuth();
+    const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
+    useEffect(() => {
+        if (authLoading) return;
 
-    if (!token || !user || user.role !== "admin") {
-      router.push("/dashboard"); // ou "/login" si tu préfères
-      return;
+        if (!user || !token || !isAdmin) {
+            router.push("/dashboard");
+            return;
+        }
+
+        fetch("http://localhost:8000/api/admin/categories", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+            },
+        })
+            .then(async (res) => {
+                if (!res.ok) throw new Error("Accès refusé");
+                const data = await res.json();
+                setCategories(data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error(
+                    "Erreur lors du chargement des catégories:",
+                    error
+                );
+                setLoading(false);
+                router.push("/dashboard");
+            });
+    }, [user, token, isAdmin, authLoading, router]);
+
+    if (authLoading || loading)
+        return <p>Chargement de l'interface admin...</p>;
+
+    if (!user || !isAdmin) {
+        return <p>Accès non autorisé</p>;
     }
 
-    // Authentifié ET admin
-    setAuthorized(true);
-
-    // Charger les catégories (exemple API admin)
-    fetch("http://localhost:8000/admin/categories", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Accès refusé");
-        const data = await res.json();
-        setCategories(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        router.push("/dashboard");
-      });
-  }, [router]);
-
-  if (!authorized || loading) return <p>Chargement de l'interface admin...</p>;
-
-  return (
-    <main style={{ padding: "2rem" }}>
-      <h1>Interface Admin</h1>
-      <h2>Catégories</h2>
-      <ul>
-        {categories.map((cat) => (
-          <li key={cat.id}>{cat.name}</li>
-        ))}
-      </ul>
-    </main>
-  );
+    return (
+        <main style={{ padding: "2rem" }}>
+            <h1>Interface Admin</h1>
+            <h2>Catégories</h2>
+            <ul>
+                {categories.map((cat) => (
+                    <li key={cat.id}>{cat.name}</li>
+                ))}
+            </ul>
+        </main>
+    );
 }
