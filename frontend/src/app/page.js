@@ -109,6 +109,7 @@ const styles = {
         fontFamily: "Arial, sans-serif",
         padding: 0,
         margin: 0,
+        minHeight: "100vh",
     },
     header: {
         backgroundColor: "#111",
