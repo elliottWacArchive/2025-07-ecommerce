@@ -110,6 +110,8 @@ const styles = {
         padding: 0,
         margin: 0,
         minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
     },
     header: {
         backgroundColor: "#111",
@@ -140,6 +142,7 @@ const styles = {
     selection: {
         padding: "40px 20px",
         backgroundColor: "#f9f9f9",
+        height: "100%",
     },
     selectionTitle: {
         fontSize: "28px",
