@@ -41,7 +41,7 @@ export default function Header() {
 
                     {/* Boutons d'action */}
                     <div className="flex items-center space-x-4">
-                        <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-white hover:bg-[#8473e4] cursor-pointer font-medium">
+                        <button className="px-4 bg-[#9e90ed] py-2  rounded-lg text-white hover:bg-[#8473e4] cursor-pointer font-medium">
                             Mon Compte
                         </button>
                         <button className="px-4 py-2 bg-[#FC87D2] text-white rounded-lg cursor-pointer hover:bg-[#f073c2] font-medium">
