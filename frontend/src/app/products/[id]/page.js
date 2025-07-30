@@ -7,12 +7,11 @@ import Header from "../../components/Header";
 import Breadcrumb from "../../components/Breadcrumb";
 import ImageGallery from "../../components/ImageGallery";
 import ProductInfo from "../../components/ProductInfo";
-import QuantitySelector from "../../components/QuantitySelector";
 import ActionButtons from "../../components/ActionButtons";
+import NotesOlfactives from "../../components/NotesOlfactives";
 
 export default function ProductDetails() {
     const [product, setProduct] = useState(null);
-    const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const id = useParams();
@@ -34,18 +33,12 @@ export default function ProductDetails() {
         }
     }, [id]);
 
-    const handleQuantityChange = (newQuantity) => {
-        if (newQuantity >= 1) {
-            setQuantity(newQuantity);
-        }
-    };
-
     if (isLoading) {
         return (
             <>
                 <Header />
                 <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
                 </div>
             </>
         );
@@ -69,11 +62,12 @@ export default function ProductDetails() {
     return (
         <>
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+            <main className="min-h-screen bg-white">
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     <Breadcrumb productName={product.name} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* Galerie d'images */}
                         <ImageGallery 
                             images={productImages}
                             selectedImage={selectedImage}
@@ -85,15 +79,9 @@ export default function ProductDetails() {
                         <div className="space-y-6">
                             <ProductInfo product={product} />
                             
-                            <QuantitySelector 
-                                quantity={quantity} 
-                                onQuantityChange={handleQuantityChange} 
-                            />
+                            <ActionButtons/>
 
-                            <ActionButtons 
-                                product={product} 
-                                quantity={quantity} 
-                            />
+                            <NotesOlfactives />
                         </div>
                     </div>
                 </div>
