@@ -39,10 +39,17 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
-            'image' => 'nullable|url|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
+                $image->move(public_path('products'), $imageName);
+                $validated['image'] = '/products/' . $imageName;
+            }
+
             $product = Product::create($validated);
             return response()->json($product, 201);
         } catch (\Exception $e) {
@@ -62,11 +69,23 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
-            'image' => 'nullable|url|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
             $product = Product::findOrFail($id);
+            
+            if ($request->hasFile('image')) {
+                if ($product->image && file_exists(public_path($product->image))) {
+                    unlink(public_path($product->image));
+                }
+                
+                $image = $request->file('image');
+                $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
+                $image->move(public_path('products'), $imageName);
+                $validated['image'] = '/products/' . $imageName;
+            }
+            
             $product->update($validated);
             $product->load('category');
             return response()->json($product);
@@ -82,6 +101,11 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
+            
+            if ($product->image && file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
+            }
+            
             $product->delete();
             return response()->json([
                 'message' => 'Produit supprimé avec succès'

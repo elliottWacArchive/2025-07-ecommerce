@@ -14,6 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-            Products::factory()->count(10)->create();
+        // Créer un utilisateur admin par défaut
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'role' => 'admin'
+        ]);
+
+        // Créer un utilisateur normal par défaut
+        User::factory()->create([
+            'name' => 'Regular User',
+            'email' => 'user@example.com',
+            'role' => 'user'
+        ]);
+
+        // Créer quelques utilisateurs aléatoires
+        User::factory()->count(8)->create();
+        
+        Products::factory()->count(10)->create();
     }
 }

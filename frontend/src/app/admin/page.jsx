@@ -52,6 +52,9 @@ export default function AdminPage() {
             <button onClick={() => router.push("/admin/products")}>
                 Gérer les produits
             </button>
+            <button onClick={() => router.push("/admin/users")}>
+                Gérer les utilisateurs
+            </button>
 
             <h2>Catégories</h2>
             <ul>

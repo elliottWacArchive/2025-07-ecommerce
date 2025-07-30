@@ -27,10 +27,15 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::get('/admin/products', [ProductController::class, 'index']);
     Route::post('/admin/products', [ProductController::class, 'store']);
     Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+    Route::post('/admin/products/{id}/update', [ProductController::class, 'update']); // Route pour FormData
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/admin/categories', [CategoryController::class, 'index']);
     Route::post('/admin/categories', [CategoryController::class, 'store']);
     Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy']);
+    
+    // User management routes
+    Route::get('/admin/users', [AuthController::class, 'getAllUsers']);
+    Route::put('/admin/users/{id}/role', [AuthController::class, 'updateUserRole']);
 });
 
 Route::get('/products', [ProductController::class, 'index']);

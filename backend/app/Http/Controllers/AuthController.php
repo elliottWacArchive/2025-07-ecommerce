@@ -28,6 +28,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -85,6 +86,45 @@ class AuthController extends Controller
     {
         return response()->json([
             'user' => $request->user()
+        ], 200);
+    }
+
+    public function getAllUsers(Request $request)
+    {
+        $users = User::select('id', 'name', 'email', 'role', 'created_at')->get();
+        
+        return response()->json([
+            'users' => $users
+        ], 200);
+    }
+
+    public function updateUserRole(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|string|in:admin,user',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->role = $request->role;
+        $user->save();
+
+        return response()->json([
+            'message' => 'User role updated successfully',
+            'user' => $user
         ], 200);
     }
 }
