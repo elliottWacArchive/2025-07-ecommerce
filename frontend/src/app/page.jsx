@@ -2,18 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "../contexts/AuthContext";
+// import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 
 export default function Home() {
-    const { user, logout, loading } = useAuth();
+    // const { user, logout, loading } = useAuth();
     const [products, setProducts] = useState([]);
     const [showAlert, setShowAlert] = useState(false);
 
-    const handleLogout = async () => {
-        await logout();
-    };
+    // const handleLogout = async () => {
+    //     await logout();
+    // };
 
     useEffect(() => {
         fetch("http://localhost:8000/api/products")
@@ -43,14 +43,6 @@ export default function Home() {
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 2000);
     };
-
-    if (loading) {
-        return (
-            <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-                <div className="row-start-2">Chargement...</div>
-            </div>
-        );
-    }
 
     return (
         <div style={styles.page}>

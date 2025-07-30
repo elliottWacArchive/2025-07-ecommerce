@@ -9,6 +9,14 @@ export default function Header() {
         await logout();
     };
 
+    if (loading) {
+        return (
+            <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+                <div className="row-start-2">Chargement...</div>
+            </div>
+        );
+    }
+
     return (
         <header className="bg-white shadow-sm border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 py-4">
@@ -68,17 +76,27 @@ export default function Header() {
 
                     {/* Boutons d'action */}
                     <div className="flex items-center space-x-4">
-                        <Link href="/login">
-                            <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
-                                {user ? (
-                                    <span onClick={handleLogout}>
-                                        Se déconnecter
-                                    </span>
-                                ) : (
-                                    <span>Se connecter</span>
-                                )}{" "}
-                            </button>
-                        </Link>
+                        {user ? (
+                            <>
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                                >
+                                    Se déconnecter
+                                </button>
+                                <Link href="/dashboard">
+                                    <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                                        Mon compte
+                                    </button>
+                                </Link>
+                            </>
+                        ) : (
+                            <Link href="/login">
+                                <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                                    Se connecter
+                                </button>
+                            </Link>
+                        )}
                         <Link href="/cart">
                             <button className="px-4 py-2 bg-[#FC87D2] text-white rounded-lg hover:bg-gray-800 font-medium">
                                 Panier
