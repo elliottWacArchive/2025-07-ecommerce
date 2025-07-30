@@ -48,6 +48,12 @@ export default function Dashboard() {
                 </ul>
             </div>
 
+            {user?.role === "admin" && (
+                <button onClick={() => router.push("/admin")}>
+                    Accéder à l'interface admin
+                </button>
+            )}
+
             <button onClick={handleLogout}>Se déconnecter</button>
         </div>
     );
