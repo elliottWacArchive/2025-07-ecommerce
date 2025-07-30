@@ -6,7 +6,7 @@ export default function Page() {
     
       <nav className="bg-white shadow-sm py-4 px-6 md:px-20 flex flex-wrap items-center justify-between text-black">
         <div className="flex flex-wrap items-center gap-6 text-sm md:text-base">
-          <span className="font-bold text-lg mr-4">Epicosmétique</span>
+          <span className="font-bold text-lg mr-4">Epicosmétique     </span>
           <a href="#">Actualités</a>
           <a href="#">Parfum</a>
           <a href="#">Corps</a>
