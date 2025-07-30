@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
+import Header from "@/components/Header";
 
 export default function Home() {
     const { user, logout, loading } = useAuth();
@@ -56,7 +57,7 @@ export default function Home() {
             {showAlert && (
                 <div style={styles.alert}>Article ajouté au panier ✅</div>
             )}
-            <header style={styles.header}>
+            {/* <header style={styles.header}>
                 <div style={styles.logoContainer}>
                     <span style={styles.logo}>[E]</span>
                     <span style={styles.brand}>PARFUMS</span>
@@ -71,7 +72,8 @@ export default function Home() {
                         <span>Se connecter</span>
                     )}
                 </Link>
-            </header>
+            </header> */}
+            <Header />
 
             <section style={styles.selection}>
                 <h2 style={styles.selectionTitle}>SÉLECTION COFFRET</h2>
