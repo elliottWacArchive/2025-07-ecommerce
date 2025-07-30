@@ -62,7 +62,7 @@ export default function ProductDetails() {
     return (
         <>
             <Header />
-            <main className="min-h-screen bg-white">
+            <main className="min-h-screen bg-[#CECDFF]">
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     <Breadcrumb productName={product.name} />
 
