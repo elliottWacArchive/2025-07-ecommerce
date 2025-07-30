@@ -80,25 +80,25 @@ export default function Header() {
                             <>
                                 <button
                                     onClick={handleLogout}
-                                    className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                                    className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-white cursor-pointer hover:bg-[#8678d1] font-medium"
                                 >
                                     Se déconnecter
                                 </button>
                                 <Link href="/dashboard">
-                                    <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                                    <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-white cursor-pointer hover:bg-[#8678d1] font-medium">
                                         Mon compte
                                     </button>
                                 </Link>
                             </>
                         ) : (
                             <Link href="/login">
-                                <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                                <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-[#8678d1] font-medium">
                                     Se connecter
                                 </button>
                             </Link>
                         )}
                         <Link href="/cart">
-                            <button className="px-4 py-2 bg-[#FC87D2] text-white rounded-lg hover:bg-gray-800 font-medium">
+                            <button className="px-4 py-2 bg-[#FC87D2] text-white rounded-lg cursor-pointer hover:bg-[#e078ba] font-medium">
                                 Panier
                             </button>
                         </Link>
