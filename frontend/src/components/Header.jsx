@@ -92,7 +92,7 @@ export default function Header() {
                             </>
                         ) : (
                             <Link href="/login">
-                                <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-[#8678d1] font-medium">
+                                <button className="px-4 bg-[#9e90ed] py-2 border border-gray-300 rounded-lg text-white cursor-pointer hover:bg-[#8678d1] font-medium">
                                     Se connecter
                                 </button>
                             </Link>
