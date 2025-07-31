@@ -70,22 +70,27 @@ export default function Home() {
             <section style={styles.selection}>
                 <h2 style={styles.selectionTitle}>SÉLECTION COFFRET</h2>
                 <div style={styles.grid}>
-                    {products.map((item, index) => (
-                        <div key={index} style={styles.coffret}>
-                            <h3 style={styles.brandName}>{item.brand}</h3>
-                            <p style={styles.coffretDesc}>
-                                Coffret Parfum <br />
-                                {item.name}
-                            </p>
-                            <span style={styles.price}>{item.price}€</span>
-                            <button
-                                style={styles.addToCartButton}
-                                onClick={() => handleAddToCart(item)}
-                            >
-                                Ajouter au panier
-                            </button>
-                        </div>
-                    ))}
+                {products.map((item, index) => (
+                <div key={index} style={styles.coffretWrapper}>
+                <div style={styles.coffret}>
+                    <Link href={`/products/${item.id}`} style={styles.link}>
+                        <h3 style={styles.brandName}>{item.brand}</h3>
+                        <p style={styles.coffretDesc}>
+                            Coffret Parfum <br />
+                            {item.name}
+                        </p>
+                        <span style={styles.price}>{item.price}€</span>
+                    </Link>
+            
+                    <button
+                        style={styles.addToCartButton}
+                        onClick={() => handleAddToCart(item)}
+                    >
+                        Ajouter au panier
+                    </button>
+                </div>
+            </div>            
+                ))}
                 </div>
             </section>
 
