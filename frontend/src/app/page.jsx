@@ -72,6 +72,36 @@ export default function Home() {
                 <div style={styles.grid}>
                     {products.map((item, index) => (
                         <div key={index} style={styles.coffret}>
+                            <Link
+                                href={`/products/${item.id}`}
+                                style={styles.imageLink}
+                            >
+                                <div style={styles.imageContainer}>
+                                    {item.image ? (
+                                        <img
+                                            src={`http://localhost:8000${item.image}`}
+                                            alt={item.name}
+                                            style={styles.productImage}
+                                        />
+                                    ) : (
+                                        <div style={styles.placeholderImage}>
+                                            <svg
+                                                style={styles.placeholderIcon}
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={1}
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+                            </Link>
                             <h3 style={styles.brandName}>{item.brand}</h3>
                             <p style={styles.coffretDesc}>
                                 Coffret Parfum <br />
@@ -154,6 +184,43 @@ const styles = {
         borderRadius: "8px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+    },
+    imageContainer: {
+        width: "100%",
+        height: "150px",
+        marginBottom: "15px",
+        borderRadius: "6px",
+        overflow: "hidden",
+        backgroundColor: "#f5f5f5",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    imageLink: {
+        textDecoration: "none",
+        display: "block",
+        cursor: "pointer",
+    },
+    productImage: {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+    },
+    placeholderImage: {
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#999",
+        backgroundColor: "#f0f0f0",
+    },
+    placeholderIcon: {
+        width: "40px",
+        height: "40px",
     },
     brandName: {
         fontSize: "18px",

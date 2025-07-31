@@ -57,7 +57,9 @@ export default function ProductDetails() {
         );
     }
 
-    const productImages = [product.image];
+    const productImages = product.image
+        ? [`http://localhost:8000${product.image}`]
+        : [];
 
     return (
         <>
