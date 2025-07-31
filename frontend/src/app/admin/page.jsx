@@ -31,37 +31,52 @@ export default function AdminPage() {
                 setLoading(false);
             })
             .catch((error) => {
-                console.error(
-                    "Erreur lors du chargement des catégories:",
-                    error
-                );
+                console.error("Erreur lors du chargement des catégories:", error);
                 setLoading(false);
                 router.push("/dashboard");
             });
     }, [user, token, isAdmin, authLoading, router]);
 
-    if (authLoading || loading)
-        return <p>Chargement de l'interface admin...</p>;
+    if (authLoading || loading) {
+        return <p className="text-center text-[#C395E4] font-medium mt-12">Chargement de l'interface admin...</p>;
+    }
 
     if (!user || !isAdmin) {
-        return <p>Accès non autorisé</p>;
+        return <p className="text-center text-red-500 font-semibold mt-12">Accès non autorisé</p>;
     }
 
     return (
-        <main style={{ padding: "2rem" }}>
-            <button onClick={() => router.push("/admin/products")}>
-                Gérer les produits
-            </button>
-            <button onClick={() => router.push("/admin/users")}>
-                Gérer les utilisateurs
-            </button>
+        <main className="min-h-screen bg-[#FDF6FF] py-12 px-4 flex justify-center">
+            <div className="bg-white rounded-xl shadow-md p-8 max-w-2xl w-full">
+                <h1 className="text-3xl font-bold text-[#C395E4] text-center mb-6">Espace Administrateur</h1>
 
-            <h2>Catégories</h2>
-            <ul>
-                {categories.map((cat) => (
-                    <li key={cat.id}>{cat.name}</li>
-                ))}
-            </ul>
+                <div className="flex justify-center gap-4 mb-8">
+                    <button
+                        onClick={() => router.push("/admin/products")}
+                        className="bg-[#C395E4] hover:bg-[#b27bd7] text-white font-semibold py-2 px-6 rounded-full transition"
+                    >
+                        Produits
+                    </button>
+                    <button
+                        onClick={() => router.push("/admin/users")}
+                        className="bg-[#FC87D2] hover:bg-[#f56bc9] text-white font-semibold py-2 px-6 rounded-full transition"
+                    >
+                        Utilisateurs
+                    </button>
+                </div>
+
+                <h2 className="text-xl font-semibold text-[#A46BCE] mb-4">Catégories</h2>
+                <ul className="space-y-3">
+                    {categories.map((cat) => (
+                        <li
+                            key={cat.id}
+                            className="bg-[#FDE7FA] text-[#AA3F9D] px-4 py-2 rounded-lg shadow-sm"
+                        >
+                            {cat.name}
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </main>
     );
 }
