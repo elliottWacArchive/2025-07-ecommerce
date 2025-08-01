@@ -47,7 +47,7 @@ export default function Home() {
     return (
         <div style={styles.page}>
             {showAlert && (
-                <div style={styles.alert}>Article ajouté au panier ✅</div>
+                <div style={styles.alert}>Article ajouté au panier  ✅</div>
             )}
             {/* <header style={styles.header}>
                 <div style={styles.logoContainer}>
