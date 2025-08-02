@@ -13,13 +13,7 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
-    // public function show($id)
-    // {
-    //     $product = Product::findOrFail($id);
-    //     return response()->json($product);
-    // }
-
-        public function show(string $id)
+    public function show(string $id)
     {
         $product = Product::with('category')->find($id);
 
@@ -27,7 +21,19 @@ class ProductController extends Controller
             return response()->json(['message' => 'Produit introuvable'], 404);
         }
 
+        $product->increment('views');
+
         return response()->json($product, 200);
+    }
+
+    public function popular()
+    {
+        $popularProducts = Product::with('category')
+            ->orderBy('views', 'desc')
+            ->take(10)
+            ->get();
+        
+        return response()->json($popularProducts);
     }
 
     public function store(Request $request)

@@ -39,6 +39,7 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 });
 
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/popular', [ProductController::class, 'popular']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/products/by-category', [ProductController::class, 'byCategory']);
 
