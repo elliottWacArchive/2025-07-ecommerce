@@ -31,31 +31,31 @@ export default function Header() {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
                         <Link
-                            href="/actualites"
+                            href="/category?category=Actualites"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
                             Actualités
                         </Link>
                         <Link
-                            href="/parfum"
+                            href="/category?category=Parfums"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
-                            Parfum
+                            Parfums
                         </Link>
                         <Link
-                            href="/corps"
+                            href="/category?category=Corps"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
                             Corps
                         </Link>
                         <Link
-                            href="/visage"
+                            href="/category?category=Visage"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
                             Visage
                         </Link>
                         <Link
-                            href="/maquillage"
+                            href="/category?category=Maquillage"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
                             Maquillage

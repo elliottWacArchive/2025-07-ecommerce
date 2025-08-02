@@ -117,4 +117,23 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    public function byCategory(Request $request)
+    {
+        $categoryName = $request->query('category');
+
+        if (!$categoryName) {
+            return response()->json(['message' => 'Nom de catégorie manquant'], 400);
+        }
+
+        $products = Product::whereHas('category', function ($query) use ($categoryName) {
+            $query->where('name', $categoryName);
+        })->with('category')->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Produit introuvable'], 404);
+        }
+
+        return response()->json($products);
+    }
 }
