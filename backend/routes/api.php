@@ -38,8 +38,10 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::put('/admin/users/{id}/role', [AuthController::class, 'updateUserRole']);
 });
 
-Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/popular', [ProductController::class, 'popular']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/products/by-category', [ProductController::class, 'byCategory']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
 

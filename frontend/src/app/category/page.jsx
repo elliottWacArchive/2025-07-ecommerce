@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Header from "@/components/Header";
+import ProductImage from "@/components/ProductImage";
 
 export default function CategoryPage() {
   const searchParams = useSearchParams();
@@ -33,25 +35,125 @@ export default function CategoryPage() {
     fetchProducts();
   }, [category]);
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading) return <p style={styles.loading}>Chargement...</p>;
 
-  if (!products.length) return <p>Aucun produit trouvé pour la catégorie "{category}"</p>;
+  if (!products.length)
+    return <p style={styles.empty}>Aucun produit trouvé pour la catégorie "{category}"</p>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Catégorie : {category}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {products.map((item) => (
-          <div key={item.id} className="border rounded-lg p-4">
-            <img src={item.image} alt={item.name} className="w-full h-40 object-cover rounded" />
-            <h2 className="text-lg font-semibold mt-2">{item.name}</h2>
-            <p>{item.price} €</p>
-            <Link href={`/products/${item.id}`} className="text-blue-500 hover:underline">
-              Voir le produit
-            </Link>
-          </div>
-        ))}
-      </div>
+    <div style={styles.page}>
+      <Header />
+      <section style={styles.selection}>
+        <h1 style={styles.selectionTitle}>Catégorie : {category}</h1>
+        <div style={styles.grid}>
+          {products.map((item) => (
+            <div key={item.id} style={styles.coffret}>
+              <Link href={`/products/${item.id}`} style={styles.link}>
+                <h3 style={styles.brandName}>{item.brand}</h3>
+                <div style={styles.imageWrapper}>
+                  <ProductImage
+                    src={item.image}
+                    alt={item.name}
+                    style={styles.image}
+                    width="100%"
+                    height="100%"
+                    placeholderClassName="rounded-xl border border-gray-200"
+                  />
+                </div>
+                <p style={styles.coffretDesc}>
+                  Coffret Parfum <br />
+                  {item.name}
+                </p>
+                <span style={styles.price}>{item.price}€</span>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
+
+const styles = {
+  page: {
+    fontFamily: "'Inter', sans-serif",
+    backgroundColor: "#D7C9F2",
+    padding: "0",
+    minHeight: "100vh",
+  },
+  selection: {
+    padding: "40px 20px",
+    flex: 1,
+  },
+  selectionTitle: {
+    fontSize: "26px",
+    textAlign: "center",
+    marginBottom: "30px",
+    color: "#4B0082",
+    fontWeight: "600",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: "24px",
+  },
+  coffret: {
+    backgroundColor: "#ffffff",
+    padding: "20px",
+    borderRadius: "14px",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.06)",
+    textAlign: "center",
+  },
+  imageWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    marginTop: "10px",
+    width: "140px",
+    height: "140px",
+    margin: "10px auto",
+    overflow: "hidden",
+    borderRadius: "12px",
+    border: "1px solid #ddd",
+    aspectRatio: "1 / 1",
+    position: "relative",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    borderRadius: "12px",
+    border: "none",
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  brandName: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#222",
+  },
+  coffretDesc: {
+    fontSize: "14px",
+    color: "#666",
+    margin: "12px 0",
+  },
+  price: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#F041A0",
+  },
+  link: {
+    textDecoration: "none",
+  },
+  loading: {
+    padding: "40px",
+    textAlign: "center",
+    fontSize: "18px",
+  },
+  empty: {
+    padding: "40px",
+    textAlign: "center",
+    fontSize: "18px",
+    color: "#666",
+  },
+};

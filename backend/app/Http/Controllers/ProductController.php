@@ -142,4 +142,17 @@ class ProductController extends Controller
 
         return response()->json($products);
     }
+
+    public function search(Request $request)
+    {
+        $name = $request->query('name');
+
+        if (!$name) {
+            return response()->json([]); 
+        }
+
+        $products = Product::where('name', 'like', '%' . $name . '%')->get();
+
+        return response()->json($products); 
+    }
 }
