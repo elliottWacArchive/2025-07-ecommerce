@@ -13,13 +13,7 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
-    // public function show($id)
-    // {
-    //     $product = Product::findOrFail($id);
-    //     return response()->json($product);
-    // }
-
-        public function show(string $id)
+    public function show(string $id)
     {
         $product = Product::with('category')->find($id);
 
@@ -27,7 +21,19 @@ class ProductController extends Controller
             return response()->json(['message' => 'Produit introuvable'], 404);
         }
 
+        $product->increment('views');
+
         return response()->json($product, 200);
+    }
+
+    public function popular()
+    {
+        $popularProducts = Product::with('category')
+            ->orderBy('views', 'desc')
+            ->take(10)
+            ->get();
+        
+        return response()->json($popularProducts);
     }
 
     public function store(Request $request)
@@ -116,5 +122,37 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function byCategory(Request $request)
+    {
+        $categoryName = $request->query('category');
+
+        if (!$categoryName) {
+            return response()->json(['message' => 'Nom de catégorie manquant'], 400);
+        }
+
+        $products = Product::whereHas('category', function ($query) use ($categoryName) {
+            $query->where('name', $categoryName);
+        })->with('category')->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Produit introuvable'], 404);
+        }
+
+        return response()->json($products);
+    }
+
+    public function search(Request $request)
+    {
+        $name = $request->query('name');
+
+        if (!$name) {
+            return response()->json([]); 
+        }
+
+        $products = Product::where('name', 'like', '%' . $name . '%')->get();
+
+        return response()->json($products); 
     }
 }

@@ -1,5 +1,5 @@
-// app/cart/page.js
 "use client";
+
 import { useEffect, useState } from "react";
 
 export default function Cart() {
