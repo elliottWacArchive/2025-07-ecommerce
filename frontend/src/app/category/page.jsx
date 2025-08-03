@@ -61,7 +61,6 @@ export default function CategoryPage() {
                   />
                 </div>
                 <p style={styles.coffretDesc}>
-                  Coffret Parfum <br />
                   {item.name}
                 </p>
                 <span style={styles.price}>{item.price}€</span>

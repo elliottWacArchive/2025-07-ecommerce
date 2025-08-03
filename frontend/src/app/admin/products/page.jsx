@@ -564,107 +564,70 @@ export default function AdminProductsPage() {
                 </div>
 
                 {products.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="border rounded-lg overflow-hidden">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-100 text-left text-gray-600">
+                        <tr>
+                          <th className="px-4 py-2">Produit</th>
+                          <th className="px-4 py-2">Prix</th>
+                          <th className="px-4 py-2">Stock</th>
+                          <th className="px-4 py-2">Marque</th>
+                          <th className="px-4 py-2">Catégorie</th>
+                          <th className="px-4 py-2">Statut</th>
+                          <th className="px-4 py-2 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {products.map((product) => (
-                            <Card
-                                key={product.id}
-                                className="overflow-hidden hover:shadow-lg transition-shadow"
-                            >
-                                <div className="aspect-square relative bg-gray-50">
-                                    {product.image ? (
-                                        <img
-                                            src={`http://localhost:8000${product.image}`}
-                                            alt={product.name}
-                                            className="aspect-square w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <Image className="h-12 w-12 text-gray-400" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <CardTitle className="text-lg line-clamp-1">
-                                            {product.name}
-                                        </CardTitle>
-                                        <Badge
-                                            variant={
-                                                product.stock > 0
-                                                    ? "default"
-                                                    : "destructive"
-                                            }
-                                            className="ml-2"
-                                        >
-                                            {product.stock > 0
-                                                ? "En stock"
-                                                : "Rupture"}
-                                        </Badge>
-                                    </div>
-                                    <CardDescription className="line-clamp-2">
-                                        {product.description}
-                                    </CardDescription>
-                                </CardHeader>
-
-                                <CardContent className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <div className="flex items-center gap-1">
-                                            <Euro className="h-3 w-3 text-muted-foreground" />
-                                            <span className="font-semibold">
-                                                {product.price}€
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Boxes className="h-3 w-3 text-muted-foreground" />
-                                            <span>{product.stock}</span>
-                                        </div>
-                                        {product.brand && (
-                                            <div className="flex items-center gap-1">
-                                                <Tag className="h-3 w-3 text-muted-foreground" />
-                                                <span className="truncate">
-                                                    {product.brand}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {product.category?.name && (
-                                            <div className="flex items-center gap-1">
-                                                <Package className="h-3 w-3 text-muted-foreground" />
-                                                <span className="truncate">
-                                                    {product.category.name}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-2 pt-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleEditProduct(product)
-                                            }
-                                            className="flex-1"
-                                        >
-                                            <Edit className="h-3 w-3 mr-1" />
-                                            Modifier
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() =>
-                                                handleDeleteProduct(product.id)
-                                            }
-                                            className="flex-1"
-                                        >
-                                            <Trash2 className="h-3 w-3 mr-1" />
-                                            Supprimer
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                          <tr key={product.id} className="border-t">
+                            <td className="px-4 py-3 flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden">
+                                {product.image ? (
+                                  <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    <Image className="h-5 w-5" />
+                                  </div>
+                                )}
+                              </div>
+                              <span className="font-medium text-gray-900">{product.name}</span>
+                            </td>
+                            <td className="px-4 py-2">{product.price}€</td>
+                            <td className="px-4 py-2">{product.stock}</td>
+                            <td className="px-4 py-2">{product.brand || "-"}</td>
+                            <td className="px-4 py-2">{product.category?.name || "-"}</td>
+                            <td className="px-4 py-2">
+                              <Badge variant={product.stock > 0 ? "default" : "destructive"}>
+                                {product.stock > 0 ? "En stock" : "Rupture"}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-2 text-right space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditProduct(product)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Modifier
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Supprimer
+                              </Button>
+                            </td>
+                          </tr>
                         ))}
-                    </div>
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                     <Card className="p-12">
                         <div className="text-center space-y-3">
