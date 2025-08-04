@@ -20,12 +20,10 @@ export default function ProductDetails() {
         async function fetchProduct() {
             try {
                 setIsLoading(true);
-                const response = await axios.get(
-                    `http://localhost:8000/api/products/${id.id}`
-                );
+                const response = await axios.get(`http://localhost:8000/api/products/${id.id}`);
                 setProduct(response.data);
             } catch (error) {
-                console.error("Error fetching product:", error);
+                console.error('Error fetching product:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -34,6 +32,32 @@ export default function ProductDetails() {
             fetchProduct();
         }
     }, [id]);
+
+    // Fonction pour déterminer le statut du stock
+    const getStockStatus = (stock) => {
+        if (stock === 0) {
+            return {
+                text: "Stock épuisé",
+                color: "text-red-600",
+                bgColor: "bg-red-100",
+                borderColor: "border-red-200"
+            };
+        } else if (stock <= 10) {
+            return {
+                text: "Quantités limitées",
+                color: "text-orange-600",
+                bgColor: "bg-orange-100",
+                borderColor: "border-orange-200"
+            };
+        } else {
+            return {
+                text: "En stock",
+                color: "text-green-600",
+                bgColor: "bg-green-100",
+                borderColor: "border-green-200"
+            };
+        }
+    };
 
     if (isLoading) {
         return (
@@ -81,7 +105,7 @@ export default function ProductDetails() {
                         <div className="space-y-6">
                             <ProductInfo product={product} />
 
-                            <ActionButtons />
+                            <ActionButtons product={product} />
 
                             <NotesOlfactives />
                         </div>
