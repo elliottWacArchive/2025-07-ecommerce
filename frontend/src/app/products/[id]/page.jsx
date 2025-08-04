@@ -36,24 +36,30 @@ export default function ProductDetails() {
         }
     }, [id]);
 
-    const handleAddToCart = () => {
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const existing = cart.find((item) => item.id === product.id);
-
-        if (existing) {
-            if (existing.quantity < product.stock) {
-                existing.quantity += 1;
-            } else {
-                alert("Stock maximum atteint !");
-                return;
-            }
+    // Fonction pour déterminer le statut du stock
+    const getStockStatus = (stock) => {
+        if (stock === 0) {
+            return {
+                text: "Stock épuisé",
+                color: "text-red-600",
+                bgColor: "bg-red-100",
+                borderColor: "border-red-200",
+            };
+        } else if (stock <= 10) {
+            return {
+                text: "Quantités limitées",
+                color: "text-orange-600",
+                bgColor: "bg-orange-100",
+                borderColor: "border-orange-200",
+            };
         } else {
-            cart.push({ ...product, quantity: 1 });
+            return {
+                text: "En stock",
+                color: "text-green-600",
+                bgColor: "bg-green-100",
+                borderColor: "border-green-200",
+            };
         }
-
-        localStorage.setItem("cart", JSON.stringify(cart));
-        setShowAlert(true);
-        setTimeout(() => setShowAlert(false), 2000);
     };
 
     if (isLoading) {
@@ -106,13 +112,9 @@ export default function ProductDetails() {
                         {/* Informations produit */}
                         <div className="space-y-6">
                             <ProductInfo product={product} />
-                            <ActionButtons
-                                product={product}
-                                onAdd={() => {
-                                    setShowAlert(true);
-                                    setTimeout(() => setShowAlert(false), 2000);
-                                }}
-                            />
+
+                            <ActionButtons product={product} />
+
                             <NotesOlfactives />
                         </div>
                     </div>

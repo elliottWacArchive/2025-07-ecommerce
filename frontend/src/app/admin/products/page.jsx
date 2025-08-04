@@ -11,6 +11,14 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +50,7 @@ import {
     Boxes,
     Tag,
     Image,
+    RefreshCw,
 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -73,13 +82,21 @@ export default function AdminProductsPage() {
         }
     };
 
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch("http://localhost:8000/api/products");
+            if (response.ok) {
+                const data = await response.json();
+                setProducts(data);
+            }
+        } catch (err) {
+            console.error("Erreur sur le chargement des produits:", err);
+            showToast("Erreur lors du chargement des produits", "error");
+        }
+    };
+
     useEffect(() => {
-        fetch("http://localhost:8000/api/products")
-            .then((res) => res.json())
-            .then((data) => setProducts(data))
-            .catch((err) =>
-                console.error("Erreur sur le chargement des produits:", err)
-            );
+        fetchProducts();
     }, []);
 
     useEffect(() => {
@@ -165,13 +182,7 @@ export default function AdminProductsPage() {
             );
 
             if (response.ok) {
-                const productsResponse = await fetch(
-                    "http://localhost:8000/api/products"
-                );
-                if (productsResponse.ok) {
-                    const updatedProducts = await productsResponse.json();
-                    setProducts(updatedProducts);
-                }
+                await fetchProducts();
                 showToast("Produit supprimé avec succès !");
             } else {
                 const errorData = await response.json();
@@ -205,9 +216,6 @@ export default function AdminProductsPage() {
         setLoading(true);
         setMessage("");
 
-        console.log("Token utilisé:", token);
-        console.log("Données envoyées:", formData);
-
         try {
             const url = isEditMode
                 ? `http://localhost:8000/api/admin/products/${editingProductId}/update`
@@ -228,25 +236,15 @@ export default function AdminProductsPage() {
                 body: submitData,
             });
 
-            console.log("Statut de la réponse:", response.status);
-
             if (response.ok) {
                 const successMessage = isEditMode
                     ? "Produit modifié avec succès !"
                     : "Produit ajouté avec succès !";
                 showToast(successMessage);
                 handleCloseModal();
-
-                const productsResponse = await fetch(
-                    "http://localhost:8000/api/products"
-                );
-                if (productsResponse.ok) {
-                    const updatedProducts = await productsResponse.json();
-                    setProducts(updatedProducts);
-                }
+                await fetchProducts();
             } else {
                 const errorText = await response.text();
-                console.log("Erreur de réponse:", errorText);
                 try {
                     const error = JSON.parse(errorText);
                     showToast(
@@ -274,6 +272,31 @@ export default function AdminProductsPage() {
         }
     };
 
+    const getStockStatus = (stock) => {
+        if (stock === 0) {
+            return {
+                text: "Stock épuisé",
+                variant: "destructive",
+                bgColor: "bg-red-500",
+                borderColor: "border-red-200"
+            };
+        } else if (stock <= 10) {
+            return {
+                text: "Quantités limitées",
+                variant: "secondary",
+                bgColor: "bg-orange-500",
+                borderColor: "border-orange-200"
+            };
+        } else {
+            return {
+                text: "En stock",
+                variant: "default",
+                bgColor: "bg-green-500",
+                borderColor: "border-green-200"
+            };
+        }
+    };
+
     if (authLoading || loading) {
         return (
             <div className="container mx-auto p-6 space-y-6">
@@ -281,23 +304,22 @@ export default function AdminProductsPage() {
                     <Skeleton className="h-8 w-64" />
                     <Skeleton className="h-10 w-48" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => (
-                        <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-6 w-3/4" />
-                                <Skeleton className="h-4 w-1/2" />
-                            </CardHeader>
-                            <CardContent>
-                                <Skeleton className="h-32 w-full mb-4" />
-                                <div className="space-y-2">
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-2/3" />
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="space-y-4">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-center space-x-4">
+                                    <Skeleton className="h-4 w-8" />
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-4 w-48" />
+                                    <Skeleton className="h-6 w-16" />
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-8 w-20" />
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -316,375 +338,379 @@ export default function AdminProductsPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto px-4 py-8 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                         <Package className="h-8 w-8" />
-                        Gestion des produits
+                        Gestion des Produits
                     </h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                         Gérez votre catalogue de produits
                     </p>
                 </div>
-
-                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                    <DialogTrigger asChild>
-                        <Button onClick={handleOpenModal} className="gap-2">
-                            <Plus className="h-4 w-4" />
-                            Ajouter un produit
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                {isEditMode ? (
-                                    <>
-                                        <Edit className="h-5 w-5" />
-                                        Modifier le produit
-                                    </>
-                                ) : (
-                                    <>
-                                        <Plus className="h-5 w-5" />
-                                        Ajouter un produit
-                                    </>
-                                )}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {isEditMode
-                                    ? "Modifiez les informations du produit ci-dessous."
-                                    : "Remplissez les informations du nouveau produit."}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">
-                                        Nom du produit *
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Nom du produit"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="brand">Marque</Label>
-                                    <Input
-                                        id="brand"
-                                        name="brand"
-                                        value={formData.brand}
-                                        onChange={handleChange}
-                                        placeholder="Marque du produit"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description">
-                                    Description *
-                                </Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Description du produit"
-                                    className="min-h-[100px]"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="price"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Euro className="h-4 w-4" />
-                                        Prix *
-                                    </Label>
-                                    <Input
-                                        type="number"
-                                        id="price"
-                                        name="price"
-                                        value={formData.price}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0.00"
-                                        step="0.01"
-                                        min="0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="stock"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Boxes className="h-4 w-4" />
-                                        Stock *
-                                    </Label>
-                                    <Input
-                                        type="number"
-                                        id="stock"
-                                        name="stock"
-                                        value={formData.stock}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0"
-                                        min="0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="category_id"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Tag className="h-4 w-4" />
-                                        Catégorie
-                                    </Label>
-                                    <Select
-                                        value={formData.category_id.toString()}
-                                        onValueChange={(value) =>
-                                            setFormData({
-                                                ...formData,
-                                                category_id: value,
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner une catégorie" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem
-                                                    key={category.id}
-                                                    value={category.id.toString()}
-                                                >
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="image"
-                                    className="flex items-center gap-2"
-                                >
-                                    <Image className="h-4 w-4" />
-                                    Image
-                                </Label>
-                                <Input
-                                    type="file"
-                                    id="image"
-                                    name="image"
-                                    accept="image/*"
-                                    onChange={handleChange}
-                                />
-                                {isEditMode &&
-                                    products.find(
-                                        (p) => p.id === editingProductId
-                                    )?.image && (
-                                        <div className="mt-2 p-3 border rounded-lg">
-                                            <p className="text-sm text-muted-foreground mb-2">
-                                                Image actuelle :
-                                            </p>
-                                            <div className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
-                                                <img
-                                                    src={`http://localhost:8000${
-                                                        products.find(
-                                                            (p) =>
-                                                                p.id ===
-                                                                editingProductId
-                                                        )?.image
-                                                    }`}
-                                                    alt="Image actuelle"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleCloseModal}
-                                >
-                                    Annuler
-                                </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                            {isEditMode
-                                                ? "Modification..."
-                                                : "Ajout..."}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {isEditMode ? (
-                                                <>
-                                                    <Edit className="h-4 w-4 mr-2" />
-                                                    Modifier
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    Ajouter
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {/* Products Grid */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">
-                        Liste des produits ({products.length})
-                    </h2>
-                </div>
-
-                {products.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {products.map((product) => (
-                            <Card
-                                key={product.id}
-                                className="overflow-hidden hover:shadow-lg transition-shadow"
-                            >
-                                <div className="aspect-square relative bg-gray-50">
-                                    {product.image ? (
-                                        <img
-                                            src={`http://localhost:8000${product.image}`}
-                                            alt={product.name}
-                                            className="aspect-square w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <Image className="h-12 w-12 text-gray-400" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <CardTitle className="text-lg line-clamp-1">
-                                            {product.name}
-                                        </CardTitle>
-                                        <Badge
-                                            variant={
-                                                product.stock > 0
-                                                    ? "default"
-                                                    : "destructive"
-                                            }
-                                            className="ml-2"
-                                        >
-                                            {product.stock > 0
-                                                ? "En stock"
-                                                : "Rupture"}
-                                        </Badge>
-                                    </div>
-                                    <CardDescription className="line-clamp-2">
-                                        {product.description}
-                                    </CardDescription>
-                                </CardHeader>
-
-                                <CardContent className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <div className="flex items-center gap-1">
-                                            <Euro className="h-3 w-3 text-muted-foreground" />
-                                            <span className="font-semibold">
-                                                {product.price}€
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Boxes className="h-3 w-3 text-muted-foreground" />
-                                            <span>{product.stock}</span>
-                                        </div>
-                                        {product.brand && (
-                                            <div className="flex items-center gap-1">
-                                                <Tag className="h-3 w-3 text-muted-foreground" />
-                                                <span className="truncate">
-                                                    {product.brand}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {product.category?.name && (
-                                            <div className="flex items-center gap-1">
-                                                <Package className="h-3 w-3 text-muted-foreground" />
-                                                <span className="truncate">
-                                                    {product.category.name}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-2 pt-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleEditProduct(product)
-                                            }
-                                            className="flex-1"
-                                        >
-                                            <Edit className="h-3 w-3 mr-1" />
-                                            Modifier
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() =>
-                                                handleDeleteProduct(product.id)
-                                            }
-                                            className="flex-1"
-                                        >
-                                            <Trash2 className="h-3 w-3 mr-1" />
-                                            Supprimer
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <Card className="p-12">
-                        <div className="text-center space-y-3">
-                            <Package className="h-12 w-12 text-muted-foreground mx-auto" />
-                            <div className="space-y-1">
-                                <h3 className="text-lg font-semibold">
-                                    Aucun produit
-                                </h3>
-                                <p className="text-muted-foreground">
-                                    Commencez par ajouter votre premier produit
-                                </p>
-                            </div>
+                <div className="flex gap-3 items-center">
+                    <Button
+                        variant="outline"
+                        onClick={fetchProducts}
+                        className="gap-2"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Recharger
+                    </Button>
+                    <Badge variant="secondary" className="gap-1">
+                        <Package className="h-3 w-3" />
+                        {products.length} produits
+                    </Badge>
+                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                        <DialogTrigger asChild>
                             <Button onClick={handleOpenModal} className="gap-2">
                                 <Plus className="h-4 w-4" />
                                 Ajouter un produit
                             </Button>
-                        </div>
-                    </Card>
-                )}
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    {isEditMode ? (
+                                        <>
+                                            <Edit className="h-5 w-5" />
+                                            Modifier le produit
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="h-5 w-5" />
+                                            Ajouter un produit
+                                        </>
+                                    )}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {isEditMode
+                                        ? "Modifiez les informations du produit ci-dessous."
+                                        : "Remplissez les informations du nouveau produit."}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            Nom du produit *
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="Nom du produit"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="brand">Marque</Label>
+                                        <Input
+                                            id="brand"
+                                            name="brand"
+                                            value={formData.brand}
+                                            onChange={handleChange}
+                                            placeholder="Marque du produit"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">
+                                        Description *
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Description du produit"
+                                        className="min-h-[100px]"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="price"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Euro className="h-4 w-4" />
+                                            Prix *
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="price"
+                                            name="price"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="0.00"
+                                            step="0.01"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="stock"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Boxes className="h-4 w-4" />
+                                            Stock *
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="stock"
+                                            name="stock"
+                                            value={formData.stock}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="0"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="category_id"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Tag className="h-4 w-4" />
+                                            Catégorie
+                                        </Label>
+                                        <Select
+                                            value={formData.category_id.toString()}
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    category_id: value,
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner une catégorie" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {categories.map((category) => (
+                                                    <SelectItem
+                                                        key={category.id}
+                                                        value={category.id.toString()}
+                                                    >
+                                                        {category.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor="image"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Image className="h-4 w-4" />
+                                        Image
+                                    </Label>
+                                    <Input
+                                        type="file"
+                                        id="image"
+                                        name="image"
+                                        accept="image/*"
+                                        onChange={handleChange}
+                                    />
+                                    {isEditMode &&
+                                        products.find(
+                                            (p) => p.id === editingProductId
+                                        )?.image && (
+                                            <div className="mt-2 p-3 border rounded-lg">
+                                                <p className="text-sm text-muted-foreground mb-2">
+                                                    Image actuelle :
+                                                </p>
+                                                <div className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
+                                                    <img
+                                                        src={`http://localhost:8000${
+                                                            products.find(
+                                                                (p) =>
+                                                                    p.id ===
+                                                                    editingProductId
+                                                            )?.image
+                                                        }`}
+                                                        alt="Image actuelle"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                </div>
+
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleCloseModal}
+                                    >
+                                        Annuler
+                                    </Button>
+                                    <Button type="submit" disabled={loading}>
+                                        {loading ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                {isEditMode
+                                                    ? "Modification..."
+                                                    : "Ajout..."}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {isEditMode ? (
+                                                    <>
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Modifier
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Ajouter
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
+
+            {/* Products Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Liste des Produits</CardTitle>
+                    <CardDescription>
+                        Visualisez et gérez tous vos produits
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {products.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-16">ID</TableHead>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead>Nom</TableHead>
+                                    <TableHead>Marque</TableHead>
+                                    <TableHead>Prix</TableHead>
+                                    <TableHead>Stock</TableHead>
+                                    <TableHead>Catégorie</TableHead>
+                                    <TableHead className="text-center w-32">
+                                        Actions
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {products.map((product) => {
+                                    const stockStatus = getStockStatus(product.stock);
+                                    return (
+                                        <TableRow
+                                            key={product.id}
+                                            className="hover:bg-muted/50"
+                                        >
+                                            <TableCell className="font-medium">
+                                                {product.id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {product.image ? (
+                                                    <div className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden">
+                                                        <img
+                                                            src={`http://localhost:8000${product.image}`}
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                                                        <Image className="h-6 w-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {product.name}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.brand || "-"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {product.price}€
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">
+                                                        {product.stock}
+                                                    </span>
+                                                    <Badge variant={stockStatus.variant}
+                                                    className={stockStatus.bgColor}
+                                                    >
+                                                        {stockStatus.text}
+                                                    </Badge>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.category?.name || "-"}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleEditProduct(product)
+                                                        }
+                                                    >
+                                                        <Edit className="h-3 w-3 mr-1" />
+                                                        Modifier
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            handleDeleteProduct(product.id)
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-3 w-3 mr-1" />
+                                                        Supprimer
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="text-center py-12">
+                            <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-semibold text-foreground">
+                                Aucun produit
+                            </h3>
+                            <p className="mt-2 text-muted-foreground">
+                                Commencez par ajouter votre premier produit
+                            </p>
+                            <Button onClick={handleOpenModal} className="mt-4 gap-2">
+                                <Plus className="h-4 w-4" />
+                                Ajouter un produit
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }
