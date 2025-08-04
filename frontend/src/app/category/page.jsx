@@ -11,13 +11,36 @@ export default function CategoryPage() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
+
+  const handleAddToCart = (product) => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const existing = cart.find((item) => item.id === product.id);
+  
+    if (existing) {
+      if (existing.quantity < product.stock) {
+        existing.quantity += 1;
+      } else {
+        alert("Stock maximum atteint !");
+        return;
+      }
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+  
+    localStorage.setItem("cart", JSON.stringify(cart));
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 2000);
+  };
 
   useEffect(() => {
     if (!category) return;
 
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/products/by-category?category=${category}`);
+        const res = await fetch(
+          `http://localhost:8000/api/products/by-category?category=${category}`
+        );
         const data = await res.json();
         if (Array.isArray(data)) {
           setProducts(data);
@@ -38,11 +61,16 @@ export default function CategoryPage() {
   if (loading) return <p style={styles.loading}>Chargement...</p>;
 
   if (!products.length)
-    return <p style={styles.empty}>Aucun produit trouvé pour la catégorie "{category}"</p>;
+    return (
+      <p style={styles.empty}>
+        Aucun produit trouvé pour la catégorie "{category}"
+      </p>
+    );
 
   return (
     <div style={styles.page}>
       <Header />
+      {showAlert && <div style={styles.alert}>Article ajouté au panier ✅</div>}
       <section style={styles.selection}>
         <h1 style={styles.selectionTitle}>Catégorie : {category}</h1>
         <div style={styles.grid}>
@@ -60,11 +88,16 @@ export default function CategoryPage() {
                     placeholderClassName="rounded-xl border border-gray-200"
                   />
                 </div>
-                <p style={styles.coffretDesc}>
-                  {item.name}
-                </p>
+                <p style={styles.coffretDesc}>{item.name}</p>
                 <span style={styles.price}>{item.price}€</span>
               </Link>
+              <br></br>
+                <button
+                  style={styles.addToCartButton}
+                  onClick={() => handleAddToCart(item)}
+                >
+                  Ajouter au panier
+                </button>
             </div>
           ))}
         </div>
@@ -155,4 +188,27 @@ const styles = {
     fontSize: "18px",
     color: "#666",
   },
+  addToCartButton: {
+    marginTop: "12px",
+    padding: "10px 16px",
+    backgroundColor: "#F041A0",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "500",
+  },
+  alert: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#4caf50",
+    color: "white",
+    padding: "12px 20px",
+    borderRadius: "6px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    zIndex: 1000,
+    transition: "opacity 0.3s ease",
+    fontWeight: "bold",
+  },  
 };
