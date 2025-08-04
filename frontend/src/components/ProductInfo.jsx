@@ -1,8 +1,41 @@
 export default function ProductInfo({ product }) {
+    // Fonction pour déterminer le statut du stock
+    const getStockStatus = (stock) => {
+        if (stock === 0) {
+            return {
+                text: "Stock épuisé",
+                color: "text-red-600",
+                bgColor: "bg-red-100",
+                borderColor: "border-red-200"
+            };
+        } else if (stock <= 10) {
+            return {
+                text: "Quantités limitées",
+                color: "text-orange-600",
+                bgColor: "bg-orange-100",
+                borderColor: "border-orange-200"
+            };
+        } else {
+            return {
+                text: "En stock",
+                color: "text-green-600",
+                bgColor: "bg-green-100",
+                borderColor: "border-green-200"
+            };
+        }
+    };
+
+    const stockStatus = getStockStatus(product.stock);
+
     return (
         <div className="space-y-6">
             {/* Titre du produit */}
             <h1 className="text-3xl font-bold text-gray-900">{product.brand} - {product.name}</h1>
+            
+            {/* Statut du stock */}
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${stockStatus.bgColor} ${stockStatus.borderColor} border`}>
+                <span className={stockStatus.color}>{stockStatus.text}</span>
+            </div>
             
             {/* Prix avec badge */}
             <div className="space-y-2">
