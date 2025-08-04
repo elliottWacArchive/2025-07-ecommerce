@@ -586,7 +586,7 @@ export default function AdminProductsPage() {
                                             <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden">
                                                 {product.image ? (
                                                     <img
-                                                        src={product.image}
+                                                        src={`http://localhost:8000${product.image}`}
                                                         alt={product.name}
                                                         className="w-full h-full object-cover"
                                                     />
