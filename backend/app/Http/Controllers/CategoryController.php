@@ -12,8 +12,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
-        return response()->json(Category::all());
+        $categories = Category::withCount('products')->get();
+        return response()->json($categories);
     }
 
     /**
@@ -21,12 +21,14 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories,name',
         ]);
         
-        $category = Category::create($request->all());
+        $category = Category::create([
+            'name' => $request->name
+        ]);
+        
         return response()->json($category, 201);
     }
 
@@ -43,7 +45,17 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        
+        $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,' . $id,
+        ]);
+        
+        $category->update([
+            'name' => $request->name
+        ]);
+        
+        return response()->json($category);
     }
 
     /**
@@ -51,8 +63,14 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
         $category = Category::findOrFail($id);
+        
+        if ($category->products()->count() > 0) {
+            return response()->json([
+                'message' => 'Impossible de supprimer cette catégorie car elle contient des produits.'
+            ], 409);
+        }
+        
         $category->delete();
         return response()->json(null, 204);
     }

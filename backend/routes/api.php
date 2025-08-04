@@ -31,6 +31,7 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/admin/categories', [CategoryController::class, 'index']);
     Route::post('/admin/categories', [CategoryController::class, 'store']);
+    Route::put('/admin/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy']);
     
     // User management routes
