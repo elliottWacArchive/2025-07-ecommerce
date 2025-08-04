@@ -23,7 +23,7 @@ export default function Header() {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-8">
-                        <a href="/">
+                        <a href="/shop">
                             <img className="h-10" src="/logo-crop.png" alt="" />
                         </a>
                     </div>
@@ -43,16 +43,16 @@ export default function Header() {
                             Parfums
                         </Link>
                         <Link
-                            href="/category?category=Corps"
+                            href="/category?category=Soins"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
-                            Corps
+                            Soins
                         </Link>
                         <Link
-                            href="/category?category=Visage"
+                            href="/category?category=Coffrets"
                             className="text-gray-700 hover:text-gray-900 font-medium"
                         >
-                            Visage
+                            Coffrets
                         </Link>
                         <Link
                             href="/category?category=Maquillage"

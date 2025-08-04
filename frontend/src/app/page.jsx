@@ -16,7 +16,7 @@ export default function Home() {
                 </p>
                 <button
                     className="bg-[#FC87D2] hover:bg-[#f56dc0] transition text-white font-semibold py-2 px-6 rounded-full"
-                    onClick={() => router.push("/actualites")}
+                    onClick={() => router.push("/shop")}
                 >
                     Explorer les produits
                 </button>
