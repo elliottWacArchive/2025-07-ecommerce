@@ -71,7 +71,7 @@ export default function AdminPage() {
                         Produits
                     </button>
                     <button
-                        onClick={() => router.push("/admin/categorizes")}
+                        onClick={() => router.push("/admin/categories")}
                         className="bg-[#9e90ed] hover:bg-[#8678d1] text-white font-semibold py-2 px-6 rounded-full transition"
                     >
                         Catégories
