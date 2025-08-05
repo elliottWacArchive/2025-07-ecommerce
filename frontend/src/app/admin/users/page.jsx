@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { AdminHeader } from "@/components/admin-header";
 import {
     Card,
     CardContent,
@@ -173,176 +174,177 @@ export default function AdminUsersPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                        <Users className="h-8 w-8" />
-                        Gestion des Utilisateurs
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Gérez les rôles et permissions des utilisateurs
-                    </p>
-                </div>
-                <div className="flex gap-3 items-center">
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            console.log(
-                                "Token actuel:",
-                                localStorage.getItem("auth_token")
-                            );
-                            fetchUsers();
-                        }}
-                        className="gap-2"
-                    >
-                        <RefreshCw className="h-4 w-4" />
-                        Recharger
-                    </Button>
-                    <Badge variant="secondary" className="gap-1">
-                        <Users className="h-3 w-3" />
-                        {users.length} utilisateurs
-                    </Badge>
-                </div>
-            </div>
-
-            {/* Users Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Liste des Utilisateurs</CardTitle>
-                    <CardDescription>
-                        Visualisez et modifiez les rôles des utilisateurs de
-                        votre plateforme
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {users.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-16">ID</TableHead>
-                                    <TableHead>Nom</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead className="w-24">Rôle</TableHead>
-                                    <TableHead>Date de création</TableHead>
-                                    <TableHead className="text-center w-32">
-                                        Actions
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map((user) => (
-                                    <TableRow
-                                        key={user.id}
-                                        className="hover:bg-muted/50"
-                                    >
-                                        <TableCell className="font-medium">
-                                            {user.id}
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                            {user.name}
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {user.email}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant={
-                                                    user.role === "admin"
-                                                        ? "destructive"
-                                                        : "secondary"
-                                                }
-                                                className="gap-1"
-                                            >
-                                                {user.role === "admin" ? (
-                                                    <Shield className="h-3 w-3" />
-                                                ) : (
-                                                    <User className="h-3 w-3" />
-                                                )}
-                                                {user.role || "user"}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground">
-                                            {new Date(
-                                                user.created_at
-                                            ).toLocaleDateString("fr-FR")}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Select
-                                                    value={user.role || "user"}
-                                                    onValueChange={(newRole) =>
-                                                        updateUserRole(
-                                                            user.id,
-                                                            newRole
-                                                        )
-                                                    }
-                                                    disabled={updating[user.id]}
-                                                >
-                                                    <SelectTrigger className="w-24 h-8">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="user">
-                                                            <div className="flex items-center gap-2">
-                                                                <User className="h-3 w-3" />
-                                                                User
-                                                            </div>
-                                                        </SelectItem>
-                                                        <SelectItem value="admin">
-                                                            <div className="flex items-center gap-2">
-                                                                <Shield className="h-3 w-3" />
-                                                                Admin
-                                                            </div>
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {updating[user.id] && (
-                                                    <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    ) : (
-                        <div className="text-center py-12">
-                            <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold text-foreground">
-                                Aucun utilisateur
-                            </h3>
-                            <p className="mt-2 text-muted-foreground">
-                                Aucun utilisateur trouvé dans la base de
-                                données.
-                            </p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Information Alert */}
-            <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                    <div className="space-y-2">
-                        <div className="font-medium">
-                            Informations sur les rôles :
-                        </div>
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                            <li>
-                                <strong>Admin :</strong> Accès complet à toutes
-                                les fonctionnalités d'administration
-                            </li>
-                            <li>
-                                <strong>User :</strong> Accès limité aux
-                                fonctionnalités utilisateur standard
-                            </li>
-                        </ul>
+        <>
+            <AdminHeader title="Utilisateurs" />
+            <div className="container mx-auto px-4 py-8 space-y-6">
+                <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
+                    <div className="flex gap-3 items-center">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                console.log(
+                                    "Token actuel:",
+                                    localStorage.getItem("auth_token")
+                                );
+                                fetchUsers();
+                            }}
+                            className="gap-2"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                            Recharger
+                        </Button>
+                        <Badge variant="secondary" className="gap-1">
+                            <Users className="h-3 w-3" />
+                            {users.length} utilisateurs
+                        </Badge>
                     </div>
-                </AlertDescription>
-            </Alert>
-        </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Liste des Utilisateurs</CardTitle>
+                        <CardDescription>
+                            Visualisez et modifiez les rôles des utilisateurs de
+                            votre plateforme
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {users.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-16">
+                                            ID
+                                        </TableHead>
+                                        <TableHead>Nom</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead className="w-24">
+                                            Rôle
+                                        </TableHead>
+                                        <TableHead>Date de création</TableHead>
+                                        <TableHead className="text-center w-32">
+                                            Actions
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {users.map((user) => (
+                                        <TableRow
+                                            key={user.id}
+                                            className="hover:bg-muted/50"
+                                        >
+                                            <TableCell className="font-medium">
+                                                {user.id}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {user.name}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {user.email}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        user.role === "admin"
+                                                            ? "destructive"
+                                                            : "secondary"
+                                                    }
+                                                    className="gap-1"
+                                                >
+                                                    {user.role === "admin" ? (
+                                                        <Shield className="h-3 w-3" />
+                                                    ) : (
+                                                        <User className="h-3 w-3" />
+                                                    )}
+                                                    {user.role || "user"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {new Date(
+                                                    user.created_at
+                                                ).toLocaleDateString("fr-FR")}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Select
+                                                        value={
+                                                            user.role || "user"
+                                                        }
+                                                        onValueChange={(
+                                                            newRole
+                                                        ) =>
+                                                            updateUserRole(
+                                                                user.id,
+                                                                newRole
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            updating[user.id]
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="w-24 h-8">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="user">
+                                                                <div className="flex items-center gap-2">
+                                                                    <User className="h-3 w-3" />
+                                                                    User
+                                                                </div>
+                                                            </SelectItem>
+                                                            <SelectItem value="admin">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Shield className="h-3 w-3" />
+                                                                    Admin
+                                                                </div>
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {updating[user.id] && (
+                                                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <div className="text-center py-12">
+                                <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold text-foreground">
+                                    Aucun utilisateur
+                                </h3>
+                                <p className="mt-2 text-muted-foreground">
+                                    Aucun utilisateur trouvé dans la base de
+                                    données.
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                        <div className="space-y-2">
+                            <div className="font-medium">
+                                Informations sur les rôles :
+                            </div>
+                            <ul className="list-disc list-inside space-y-1 text-sm">
+                                <li>
+                                    <strong>Admin :</strong> Accès complet à
+                                    toutes les fonctionnalités d'administration
+                                </li>
+                                <li>
+                                    <strong>User :</strong> Accès limité aux
+                                    fonctionnalités utilisateur standard
+                                </li>
+                            </ul>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            </div>
+        </>
     );
 }

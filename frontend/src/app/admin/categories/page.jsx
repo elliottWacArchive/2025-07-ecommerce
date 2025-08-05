@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdminHeader } from "@/components/admin-header";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -243,225 +244,235 @@ export default function AdminCategoriesPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4 max-w-6xl">
-            {/* header */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Gestion des Catégories
-                        </h1>
-                        <p className="text-muted-foreground mt-2">
-                            Gérez les catégories de votre catalogue
-                        </p>
-                    </div>
-                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                        <DialogTrigger asChild>
-                            <Button onClick={handleOpenModal} className="gap-2">
-                                <Plus className="h-4 w-4" />
-                                Ajouter une catégorie
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-md">
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                    {isEditMode ? (
-                                        <>
-                                            <Edit className="h-5 w-5" />
-                                            Modifier la catégorie
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="h-5 w-5" />
-                                            Ajouter une catégorie
-                                        </>
-                                    )}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {isEditMode
-                                        ? "Modifiez le nom de la catégorie ci-dessous."
-                                        : "Ajoutez une nouvelle catégorie à votre catalogue."}
-                                </DialogDescription>
-                            </DialogHeader>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">
-                                        Nom de la catégorie
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        placeholder="Ex: Parfums, Maquillage..."
-                                        className={
-                                            errors.name ? "border-red-500" : ""
-                                        }
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-500 flex items-center gap-1">
-                                            <AlertCircle className="h-3 w-3" />
-                                            {errors.name}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-end gap-2 pt-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleCloseModal}
-                                        disabled={isSubmitting}
-                                    >
-                                        Annuler
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                    >
-                                        {isSubmitting
-                                            ? isEditMode
-                                                ? "Modification..."
-                                                : "Création..."
-                                            : isEditMode
-                                            ? "Modifier"
-                                            : "Créer"}
-                                    </Button>
-                                </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </div>
-
-            {/* liste catégories */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Tag className="h-5 w-5" />
-                        Catégories ({categories.length})
-                    </CardTitle>
-                    <CardDescription>
-                        Liste de toutes les catégories de produits
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="space-y-4">
-                            {[...Array(5)].map((_, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center space-x-4"
+        <>
+            <AdminHeader title="Catégories" />
+            <div className="container mx-auto py-8 px-4 max-w-6xl">
+                <div className="mb-8">
+                    <div className="flex items-center justify-end">
+                        <Dialog
+                            open={isModalOpen}
+                            onOpenChange={setIsModalOpen}
+                        >
+                            <DialogTrigger asChild>
+                                <Button
+                                    onClick={handleOpenModal}
+                                    className="gap-2"
                                 >
-                                    <Skeleton className="h-12 w-12 rounded-full" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-[200px]" />
-                                        <Skeleton className="h-4 w-[100px]" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : categories.length > 0 ? (
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nom</TableHead>
-                                        <TableHead>Produits</TableHead>
-                                        <TableHead>Date de création</TableHead>
-                                        <TableHead className="text-right">
-                                            Actions
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {categories.map((category) => (
-                                        <TableRow key={category.id}>
-                                            <TableCell className="font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    <Tag className="h-4 w-4 text-muted-foreground" />
-                                                    {category.name}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary">
-                                                    {category.products_count ||
-                                                        0}{" "}
-                                                    produit(s)
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {new Date(
-                                                    category.created_at
-                                                ).toLocaleDateString("fr-FR")}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            handleEditCategory(
-                                                                category
-                                                            )
-                                                        }
-                                                        className="gap-1"
-                                                    >
-                                                        <Edit className="h-3 w-3" />
-                                                        Modifier
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() =>
-                                                            handleDeleteCategory(
-                                                                category.id
-                                                            )
-                                                        }
-                                                        className="gap-1"
-                                                    >
-                                                        <Trash2 className="h-3 w-3" />
-                                                        Supprimer
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    ) : (
-                        <div className="text-center py-12">
-                            <Tag className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold text-foreground">
-                                Aucune catégorie
-                            </h3>
-                            <p className="mt-2 text-muted-foreground">
-                                Commencez par créer votre première catégorie.
-                            </p>
-                            <Button
-                                onClick={handleOpenModal}
-                                className="mt-4 gap-2"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Créer une catégorie
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                    <Plus className="h-4 w-4" />
+                                    Ajouter une catégorie
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        {isEditMode ? (
+                                            <>
+                                                <Edit className="h-5 w-5" />
+                                                Modifier la catégorie
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="h-5 w-5" />
+                                                Ajouter une catégorie
+                                            </>
+                                        )}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        {isEditMode
+                                            ? "Modifiez le nom de la catégorie ci-dessous."
+                                            : "Ajoutez une nouvelle catégorie à votre catalogue."}
+                                    </DialogDescription>
+                                </DialogHeader>
 
-            <Alert className="mt-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                    <strong>Note:</strong> La suppression d'une catégorie n'est
-                    possible que si elle ne contient aucun produit. Vous devez
-                    d'abord déplacer ou supprimer tous les produits de cette
-                    catégorie.
-                </AlertDescription>
-            </Alert>
-        </div>
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="space-y-4"
+                                >
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            Nom de la catégorie
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            placeholder="Ex: Parfums, Maquillage..."
+                                            className={
+                                                errors.name
+                                                    ? "border-red-500"
+                                                    : ""
+                                            }
+                                        />
+                                        {errors.name && (
+                                            <p className="text-sm text-red-500 flex items-center gap-1">
+                                                <AlertCircle className="h-3 w-3" />
+                                                {errors.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 pt-4">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleCloseModal}
+                                            disabled={isSubmitting}
+                                        >
+                                            Annuler
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                        >
+                                            {isSubmitting
+                                                ? isEditMode
+                                                    ? "Modification..."
+                                                    : "Création..."
+                                                : isEditMode
+                                                ? "Modifier"
+                                                : "Créer"}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                </div>
+
+                {/* liste catégories */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Tag className="h-5 w-5" />
+                            Catégories ({categories.length})
+                        </CardTitle>
+                        <CardDescription>
+                            Liste de toutes les catégories de produits
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? (
+                            <div className="space-y-4">
+                                {[...Array(5)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center space-x-4"
+                                    >
+                                        <Skeleton className="h-12 w-12 rounded-full" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-4 w-[200px]" />
+                                            <Skeleton className="h-4 w-[100px]" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : categories.length > 0 ? (
+                            <div className="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nom</TableHead>
+                                            <TableHead>Produits</TableHead>
+                                            <TableHead>
+                                                Date de création
+                                            </TableHead>
+                                            <TableHead className="text-right">
+                                                Actions
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {categories.map((category) => (
+                                            <TableRow key={category.id}>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex items-center gap-2">
+                                                        <Tag className="h-4 w-4 text-muted-foreground" />
+                                                        {category.name}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="secondary">
+                                                        {category.products_count ||
+                                                            0}{" "}
+                                                        produit(s)
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {new Date(
+                                                        category.created_at
+                                                    ).toLocaleDateString(
+                                                        "fr-FR"
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() =>
+                                                                handleEditCategory(
+                                                                    category
+                                                                )
+                                                            }
+                                                            className="gap-1"
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                            Modifier
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            onClick={() =>
+                                                                handleDeleteCategory(
+                                                                    category.id
+                                                                )
+                                                            }
+                                                            className="gap-1"
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                            Supprimer
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <Tag className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold text-foreground">
+                                    Aucune catégorie
+                                </h3>
+                                <p className="mt-2 text-muted-foreground">
+                                    Commencez par créer votre première
+                                    catégorie.
+                                </p>
+                                <Button
+                                    onClick={handleOpenModal}
+                                    className="mt-4 gap-2"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Créer une catégorie
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Alert className="mt-6">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                        <strong>Note:</strong> La suppression d'une catégorie
+                        n'est possible que si elle ne contient aucun produit.
+                        Vous devez d'abord déplacer ou supprimer tous les
+                        produits de cette catégorie.
+                    </AlertDescription>
+                </Alert>
+            </div>
+        </>
     );
 }
