@@ -13,7 +13,7 @@ import NotesOlfactives from "@/components/NotesOlfactives";
 export default function ProductDetails() {
     const [product, setProduct] = useState(null);
     const [selectedImage, setSelectedImage] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);a
     const [showAlert, setShowAlert] = useState(false);
     const id = useParams();
 
