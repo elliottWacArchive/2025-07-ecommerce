@@ -74,4 +74,21 @@ class CategoryController extends Controller
         $category->delete();
         return response()->json(null, 204);
     }
+    
+    public function getByName(Request $request)
+    {
+        $name = $request->query('name');
+
+        if (!$name) {
+            return response()->json(['message' => 'Nom de catégorie manquant'], 400);
+        }
+
+        $category = Category::where('name', $name)->first();
+
+        if (!$category) {
+            return response()->json(['message' => 'Catégorie non trouvée'], 404);
+        }
+
+        return response()->json($category);
+    }
 }

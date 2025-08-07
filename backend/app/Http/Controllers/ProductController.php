@@ -7,10 +7,23 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function index()
+        public function index(Request $request)
     {
-        $products = Product::with('category')->get();
-        return response()->json($products);
+        $query = Product::query();
+
+        if ($request->has('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        if ($request->has('subcategory')) {
+            $query->where('subcategory_id', $request->subcategory);
+        }
+
+        if ($request->has('subsubcategory')) {
+            $query->where('sub_subcategory_id', $request->subsubcategory);
+        }
+
+        return response()->json($query->get());
     }
 
     public function show(string $id)
@@ -155,4 +168,39 @@ class ProductController extends Controller
 
         return response()->json($products); 
     }
+    
+        public function bySubcategory(Request $request)
+    {
+        $subcategoryId = $request->query('subcategory_id');
+
+        if (!$subcategoryId) {
+            return response()->json(['message' => 'ID de sous-catégorie manquant'], 400);
+        }
+
+        $products = Product::where('subcategory_id', $subcategoryId)->with('category')->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Aucun produit trouvé pour cette sous-catégorie'], 404);
+        }
+
+        return response()->json($products);
+    }
+
+        public function bySubSubcategory(Request $request)
+    {
+        $subSubcategoryId = $request->query('sub_subcategory_id');
+
+        if (!$subSubcategoryId) {
+            return response()->json(['message' => 'ID de sous-sous-catégorie manquant'], 400);
+        }
+
+        $products = Product::where('sub_subcategory_id', $subSubcategoryId)->with('category')->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Aucun produit trouvé pour cette sous-sous-catégorie'], 404);
+        }
+
+        return response()->json($products);
+    }
+
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\SubSubcategoryController;
 
 // app()->routeMiddleware([
 //     'is_admin' => IsAdmin::class,
@@ -39,10 +41,23 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::put('/admin/users/{id}/role', [AuthController::class, 'updateUserRole']);
 });
 
+// Produits
+Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/search', [ProductController::class, 'search']);
 Route::get('/products/popular', [ProductController::class, 'popular']);
 Route::get('/products/by-category', [ProductController::class, 'byCategory']);
-Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/by-subcategory', [ProductController::class, 'bySubcategory']);
+Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+
+Route::get('/categories/by-name', [CategoryController::class, 'getByName']);
+Route::get('/subcategories/by-category', [SubcategoryController::class, 'byCategory']);
+Route::get('/subsubcategories/by-subcategory', [SubSubcategoryController::class, 'bySubcategory']);
+Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
+
+
+
+
+
 
 
