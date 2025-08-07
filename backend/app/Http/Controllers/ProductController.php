@@ -28,7 +28,7 @@ class ProductController extends Controller
 
     public function show(string $id)
     {
-        $product = Product::with('category')->find($id);
+        $product = Product::with(['category', 'subcategory', 'subSubcategory'])->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Produit introuvable'], 404);

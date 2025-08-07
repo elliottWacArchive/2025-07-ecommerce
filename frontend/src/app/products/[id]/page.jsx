@@ -101,6 +101,8 @@ export default function ProductDetails() {
           <Breadcrumb
             productName={product.name}
             categoryName={product.category?.name}
+            subcategoryName={product.subcategory?.name}
+            subSubcategoryName={product.sub_subcategory?.name}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
