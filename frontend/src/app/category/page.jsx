@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProductImage from "@/components/ProductImage";
+import SearchBar from "@/components/ui/SearchBar";
 
 export default function CategoryPage() {
   const searchParams = useSearchParams();
@@ -135,6 +136,7 @@ export default function CategoryPage() {
       {showAlert && <div style={styles.alert}>Article ajouté au panier ✅</div>}
       <section style={styles.selection}>
         <h1 style={styles.selectionTitle}>Catégorie : {category}</h1>
+        <SearchBar onSearch={(results) => setProducts(results)} />
 
         {/* sous-catégories */}
         <div

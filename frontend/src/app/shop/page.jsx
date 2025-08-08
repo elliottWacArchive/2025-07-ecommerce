@@ -80,7 +80,7 @@ export default function Home() {
     <div style={styles.page}>
       {showAlert && <div style={styles.alert}>Article ajouté au panier ✅</div>}
       <Header />
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar onSearch={(results) => setProducts(results)} />
 
       {/* produits pops */}
       <section style={styles.popularSection}>
