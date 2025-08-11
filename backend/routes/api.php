@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubSubcategoryController;
@@ -19,6 +20,14 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    
+    // Cart routes
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart', [CartController::class, 'store']);
+    Route::put('/cart/{productId}', [CartController::class, 'update']);
+    Route::delete('/cart/{productId}', [CartController::class, 'destroy']);
+    Route::delete('/cart', [CartController::class, 'clear']);
+    Route::post('/cart/sync', [CartController::class, 'sync']);
 });
 
 // Admin routes
@@ -54,10 +63,3 @@ Route::get('/categories/by-name', [CategoryController::class, 'getByName']);
 Route::get('/subcategories/by-category', [SubcategoryController::class, 'byCategory']);
 Route::get('/subsubcategories/by-subcategory', [SubSubcategoryController::class, 'bySubcategory']);
 Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
-
-
-
-
-
-
-

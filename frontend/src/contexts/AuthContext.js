@@ -156,6 +156,7 @@ export function AuthProvider({ children }) {
         setToken(null);
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
+        localStorage.removeItem("cart");
     };
 
     const value = {
