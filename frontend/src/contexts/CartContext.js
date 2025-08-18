@@ -109,8 +109,15 @@ export function CartProvider({ children }) {
                 }
             } else {
                 const localCart = [...cart];
+                
+                // Créer un identifiant unique pour le produit avec sa contenance
+                const productKey = product.capacity ? `${product.id}-${product.capacity}` : product.id;
+                
                 const existingItem = localCart.find(
-                    (item) => item.id === product.id
+                    (item) => {
+                        const itemKey = item.capacity ? `${item.id}-${item.capacity}` : item.id;
+                        return itemKey === productKey;
+                    }
                 );
 
                 if (existingItem) {
