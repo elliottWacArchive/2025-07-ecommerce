@@ -13,6 +13,7 @@ import NotesOlfactives from "@/components/NotesOlfactives";
 export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedCapacity, setSelectedCapacity] = useState("50ml");
   const [isLoading, setIsLoading] = useState(true);
   const [showAlert, setShowAlert] = useState(false);
   const id = useParams();
@@ -36,30 +37,15 @@ export default function ProductDetails() {
     }
   }, [id]);
 
-  // Fonction pour déterminer le statut du stock
-  const getStockStatus = (stock) => {
-    if (stock === 0) {
-      return {
-        text: "Stock épuisé",
-        color: "text-red-600",
-        bgColor: "bg-red-100",
-        borderColor: "border-red-200",
-      };
-    } else if (stock <= 10) {
-      return {
-        text: "Quantités limitées",
-        color: "text-orange-600",
-        bgColor: "bg-orange-100",
-        borderColor: "border-orange-200",
-      };
-    } else {
-      return {
-        text: "En stock",
-        color: "text-green-600",
-        bgColor: "bg-green-100",
-        borderColor: "border-green-200",
-      };
-    }
+  // Fonction pour calculer le prix selon la contenance
+  const calculatePrice = (basePrice, capacity) => {
+    const capacityMultipliers = {
+      "30ml": 0.7,   // 30ml = 70% du prix de base
+      "50ml": 1.0,   // 50ml = prix de base (100%)
+      "100ml": 1.8   // 100ml = 180% du prix de base
+    };
+    
+    return (basePrice * capacityMultipliers[capacity]).toFixed(2);
   };
 
   if (isLoading) {
@@ -116,9 +102,17 @@ export default function ProductDetails() {
 
             {/* Informations produit */}
             <div className="space-y-6">
-              <ProductInfo product={product} />
+              <ProductInfo 
+                product={product} 
+                selectedCapacity={selectedCapacity}
+                onCapacityChange={setSelectedCapacity}
+                calculatePrice={calculatePrice}
+              />
 
-              <ActionButtons product={product} />
+              <ActionButtons 
+                product={product} 
+                selectedCapacity={selectedCapacity}
+              />
 
               <NotesOlfactives />
             </div>
