@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import Header from "@/components/Header";
 
 export default function Home() {
@@ -124,14 +123,11 @@ export default function Home() {
             fill
             className="object-cover"
           />
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <button className="bg-[#FC87D2] text-white px-6 py-2 rounded-full shadow-md">
+          <div className="absolute inset-0 flex items-center justify-center transform transition hover:scale-105">
+           <button className="bg-[#FC87D2] text-white px-6 py-2 rounded-full shadow-md">
               Nos Offres
             </button>
-          </motion.div>
+          </div>
         </div>
 
         <div
@@ -144,14 +140,11 @@ export default function Home() {
             fill
             className="object-cover"
           />
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
+        <div className="absolute inset-0 flex items-center justify-center transform transition hover:scale-105">
             <button className="bg-[#9A87FC] text-white px-6 py-2 rounded-full shadow-md">
               Nos Nouveautés
             </button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
