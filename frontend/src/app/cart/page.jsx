@@ -79,7 +79,7 @@ export default function Cart() {
                             <div className="space-y-6">
                                 {cart.map((item) => (
                                     <div
-                                        key={item.id}
+                                        key={`${item.id}-${item.capacity || 'default'}`}
                                         className="border border-[#CECDFF] rounded-xl p-6 bg-gray-50 hover:shadow-md transition-shadow"
                                     >
                                         <div className="flex items-center space-x-6">
@@ -103,8 +103,18 @@ export default function Cart() {
                                                 <h3 className="text-xl font-semibold text-gray-800 truncate">
                                                     {item.brand && `${item.brand} - `}{item.name}
                                                 </h3>
+                                                {item.capacity && (
+                                                    <p className="text-sm text-blue-600 font-medium mt-1">
+                                                        Contenance : {item.capacity}
+                                                    </p>
+                                                )}
                                                 <p className="text-gray-600 mt-1">
                                                     Prix unitaire : <span className="font-medium">{item.price}€</span>
+                                                    {item.originalPrice && item.originalPrice !== item.price && (
+                                                        <span className="text-sm text-gray-500 ml-2">
+                                                            (Prix de base: {item.originalPrice}€)
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 <p className="text-sm text-gray-500">
                                                     Stock disponible : <span className="font-medium">{item.stock}</span>
