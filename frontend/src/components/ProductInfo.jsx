@@ -1,31 +1,7 @@
-export default function ProductInfo({ product }) {
-    // Fonction pour déterminer le statut du stock
-    const getStockStatus = (stock) => {
-        if (stock === 0) {
-            return {
-                text: "Stock épuisé",
-                color: "text-red-600",
-                bgColor: "bg-red-100",
-                borderColor: "border-red-200"
-            };
-        } else if (stock <= 10) {
-            return {
-                text: "Quantités limitées",
-                color: "text-orange-600",
-                bgColor: "bg-orange-100",
-                borderColor: "border-orange-200"
-            };
-        } else {
-            return {
-                text: "En stock",
-                color: "text-green-600",
-                bgColor: "bg-green-100",
-                borderColor: "border-green-200"
-            };
-        }
-    };
+import StockStatus from "./StockStatus";
 
-    const stockStatus = getStockStatus(product.stock);
+export default function ProductInfo({ product, selectedCapacity, onCapacityChange, calculatePrice }) {
+    const currentPrice = calculatePrice(product.price, selectedCapacity);
 
     return (
         <div className="space-y-6">
@@ -33,16 +9,19 @@ export default function ProductInfo({ product }) {
             <h1 className="text-3xl font-bold text-gray-900">{product.brand} - {product.name}</h1>
             
             {/* Statut du stock */}
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${stockStatus.bgColor} ${stockStatus.borderColor} border`}>
-                <span className={stockStatus.color}>{stockStatus.text}</span>
-            </div>
+            <StockStatus stock={product.stock} />
             
             {/* Prix avec badge */}
             <div className="space-y-2">
                 <div className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">
                     Prix
                 </div>
-                <div className="text-4xl font-bold text-gray-900">{product.price} €</div>
+                <div className="text-4xl font-bold text-gray-900">€{currentPrice}</div>
+                {selectedCapacity !== "50ml" && (
+                    <p className="text-sm text-gray-500">
+                        Prix de base: €{product.price} (50ml)
+                    </p>
+                )}
             </div>
 
             {/* Description */}
@@ -54,12 +33,18 @@ export default function ProductInfo({ product }) {
             {/* Contenance */}
             <div className="space-y-2">
                 <div className="text-sm text-gray-500 font-medium">Contenance</div>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent">
-                    <option value="">Sélectionner une contenance</option>
-                    <option value="30ml">30ml</option>
-                    <option value="50ml">50ml</option>
-                    <option value="100ml">100ml</option>
+                <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                    value={selectedCapacity}
+                    onChange={(e) => onCapacityChange(e.target.value)}
+                >
+                    <option value="30ml">30ml - €{calculatePrice(product.price, "30ml")}</option>
+                    <option value="50ml">50ml - €{calculatePrice(product.price, "50ml")}</option>
+                    <option value="100ml">100ml - €{calculatePrice(product.price, "100ml")}</option>
                 </select>
+                <p className="text-xs text-gray-500">
+                    Sélectionnez la contenance pour voir le prix correspondant
+                </p>
             </div>
         </div>
     );
