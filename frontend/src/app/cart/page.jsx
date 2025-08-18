@@ -2,6 +2,7 @@
 
 import { useCart } from "@/contexts/CartContext";
 import Header from "@/components/Header";
+import { Trash2, ShoppingBag } from "lucide-react";
 
 export default function Cart() {
     const {
@@ -63,6 +64,7 @@ export default function Cart() {
 
                         {cart.length === 0 ? (
                             <div className="text-center py-16">
+                                <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                                 <p className="text-xl text-gray-600 mb-4">
                                     Votre panier est vide
                                 </p>
@@ -78,32 +80,40 @@ export default function Cart() {
                                 {cart.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="border border-[#CECDFF] rounded-xl p-6 bg-gray-50"
+                                        className="border border-[#CECDFF] rounded-xl p-6 bg-gray-50 hover:shadow-md transition-shadow"
                                     >
                                         <div className="flex items-center space-x-6">
-                                            {item.image && (
-                                                <img
-                                                    src={`http://localhost:8000/storage/${item.image}`}
-                                                    alt={item.name}
-                                                    className="w-20 h-20 object-cover rounded-lg"
-                                                />
-                                            )}
+                                            {/* Image du produit en miniature */}
+                                            <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                                                {item.image ? (
+                                                    <img
+                                                        src={`http://localhost:8000${item.image}`}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                        <ShoppingBag className="h-8 w-8" />
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                            <div className="flex-1">
-                                                <h3 className="text-xl font-semibold text-gray-800">
-                                                    {item.brand} - {item.name}
+                                            {/* Informations du produit */}
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-xl font-semibold text-gray-800 truncate">
+                                                    {item.brand && `${item.brand} - `}{item.name}
                                                 </h3>
                                                 <p className="text-gray-600 mt-1">
-                                                    Prix unitaire : {item.price}
-                                                    €
+                                                    Prix unitaire : <span className="font-medium">{item.price}€</span>
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    Stock disponible :{" "}
-                                                    {item.stock}
+                                                    Stock disponible : <span className="font-medium">{item.stock}</span>
                                                 </p>
                                             </div>
 
+                                            {/* Contrôles et prix */}
                                             <div className="flex items-center space-x-4">
+                                                {/* Sélecteur de quantité */}
                                                 <div className="flex items-center space-x-2">
                                                     <label className="text-sm font-medium text-gray-700">
                                                         Quantité :
@@ -123,28 +133,28 @@ export default function Cart() {
                                                                 item.stock
                                                             )
                                                         }
-                                                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-[#C395E4] focus:border-transparent"
                                                     />
                                                 </div>
 
-                                                <div className="text-right">
+                                                {/* Prix total de l'article */}
+                                                <div className="text-right min-w-[80px]">
                                                     <p className="text-lg font-semibold text-gray-800">
-                                                        {(
-                                                            item.price *
-                                                            item.quantity
-                                                        ).toFixed(2)}
-                                                        €
+                                                        {(item.price * item.quantity).toFixed(2)}€
                                                     </p>
                                                 </div>
 
+                                                {/* Bouton supprimer */}
                                                 <button
                                                     onClick={() =>
                                                         handleRemoveFromCart(
                                                             item.id
                                                         )
                                                     }
-                                                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                                                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                                                    title="Supprimer du panier"
                                                 >
+                                                    <Trash2 className="h-4 w-4" />
                                                     Supprimer
                                                 </button>
                                             </div>
@@ -152,6 +162,7 @@ export default function Cart() {
                                     </div>
                                 ))}
 
+                                {/* Résumé et bouton de paiement */}
                                 <div className="border-t border-[#CECDFF] pt-6">
                                     <div className="flex justify-between items-center">
                                         <div className="text-2xl font-bold text-[#C395E4]">
