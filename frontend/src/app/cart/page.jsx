@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import Header from "@/components/Header";
+import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { Trash2, ShoppingBag } from "lucide-react";
 
 export default function Cart() {
+    const [shippingCost, setShippingCost] = useState(null);
     const {
         cart,
         loading,
@@ -27,6 +30,19 @@ export default function Cart() {
         if (window.confirm("Êtes-vous sûr de vouloir vider votre panier ?")) {
             await clearCart();
         }
+    };
+
+    const handleShippingChange = (shipping) => {
+        setShippingCost(shipping);
+    };
+
+    const getShippingCost = () => {
+        if (!shippingCost || !shippingCost.cost) return 0;
+        return parseFloat(shippingCost.cost) || 0;
+    };
+
+    const getTotalWithShipping = () => {
+        return total + getShippingCost();
     };
 
     const total = getCartTotal();
@@ -101,13 +117,21 @@ export default function Cart() {
                                             {/* Informations du produit */}
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-xl font-semibold text-gray-800 truncate">
-                                                    {item.brand && `${item.brand} - `}{item.name}
+                                                    {item.brand &&
+                                                        `${item.brand} - `}
+                                                    {item.name}
                                                 </h3>
                                                 <p className="text-gray-600 mt-1">
-                                                    Prix unitaire : <span className="font-medium">{item.price}€</span>
+                                                    Prix unitaire :{" "}
+                                                    <span className="font-medium">
+                                                        {item.price}€
+                                                    </span>
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    Stock disponible : <span className="font-medium">{item.stock}</span>
+                                                    Stock disponible :{" "}
+                                                    <span className="font-medium">
+                                                        {item.stock}
+                                                    </span>
                                                 </p>
                                             </div>
 
@@ -140,7 +164,11 @@ export default function Cart() {
                                                 {/* Prix total de l'article */}
                                                 <div className="text-right min-w-[80px]">
                                                     <p className="text-lg font-semibold text-gray-800">
-                                                        {(item.price * item.quantity).toFixed(2)}€
+                                                        {(
+                                                            item.price *
+                                                            item.quantity
+                                                        ).toFixed(2)}
+                                                        €
                                                     </p>
                                                 </div>
 
@@ -162,15 +190,61 @@ export default function Cart() {
                                     </div>
                                 ))}
 
+                                {/* Calculateur de frais de port */}
+                                <div className="border-t border-[#CECDFF] pt-6">
+                                    <ShippingCalculator
+                                        orderAmount={total}
+                                        onShippingChange={handleShippingChange}
+                                    />
+                                </div>
+
                                 {/* Résumé et bouton de paiement */}
                                 <div className="border-t border-[#CECDFF] pt-6">
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-2xl font-bold text-[#C395E4]">
-                                            Total : {total.toFixed(2)} €
+                                    <div className="space-y-3">
+                                        {/* Sous-total */}
+                                        <div className="flex justify-between items-center text-lg">
+                                            <span>Sous-total :</span>
+                                            <span className="font-semibold">
+                                                {total.toFixed(2)} €
+                                            </span>
                                         </div>
-                                        <button className="bg-[#FC87D2] hover:bg-[#f56dc0] text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-                                            Procéder au paiement
-                                        </button>
+
+                                        {/* frais de port */}
+                                        <div className="flex justify-between items-center text-lg">
+                                            <span>Frais de port :</span>
+                                            <span className="font-semibold">
+                                                {shippingCost
+                                                    ? getShippingCost() > 0
+                                                        ? `${getShippingCost().toFixed(
+                                                              2
+                                                          )} €`
+                                                        : "Gratuit"
+                                                    : "À calculer"}
+                                            </span>
+                                        </div>
+
+                                        {/* total général */}
+                                        <div className="border-t pt-3">
+                                            <div className="flex justify-between items-center">
+                                                <div className="text-2xl font-bold text-[#C395E4]">
+                                                    Total :{" "}
+                                                    {getTotalWithShipping().toFixed(
+                                                        2
+                                                    )}{" "}
+                                                    €
+                                                </div>
+                                                <button
+                                                    className={`py-3 px-8 rounded-lg transition-colors font-semibold ${
+                                                        shippingCost
+                                                            ? "bg-[#FC87D2] hover:bg-[#f56dc0] text-white"
+                                                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                    }`}
+                                                    disabled={!shippingCost}
+                                                >
+                                                    Procéder au paiement
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
