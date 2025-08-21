@@ -55,6 +55,16 @@ const navConfig = [
             },
         ],
     },
+    {
+        title: "Livraison",
+        url: "#",
+        items: [
+            {
+                title: "Frais de port",
+                url: "/admin/shipping",
+            },
+        ],
+    },
 ];
 
 export function AppSidebar({ ...props }) {
