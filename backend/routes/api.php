@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ShippingCostController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubSubcategoryController;
@@ -48,6 +49,13 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     // User management routes
     Route::get('/admin/users', [AuthController::class, 'getAllUsers']);
     Route::put('/admin/users/{id}/role', [AuthController::class, 'updateUserRole']);
+    
+    // Shipping costs management routes
+    Route::get('/admin/shipping-costs', [ShippingCostController::class, 'index']);
+    Route::post('/admin/shipping-costs', [ShippingCostController::class, 'store']);
+    Route::get('/admin/shipping-costs/{id}', [ShippingCostController::class, 'show']);
+    Route::put('/admin/shipping-costs/{id}', [ShippingCostController::class, 'update']);
+    Route::delete('/admin/shipping-costs/{id}', [ShippingCostController::class, 'destroy']);
 });
 
 // Produits
@@ -63,3 +71,9 @@ Route::get('/categories/by-name', [CategoryController::class, 'getByName']);
 Route::get('/subcategories/by-category', [SubcategoryController::class, 'byCategory']);
 Route::get('/subsubcategories/by-subcategory', [SubSubcategoryController::class, 'bySubcategory']);
 Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
+
+// Shipping costs public routes
+Route::post('/shipping/calculate', [ShippingCostController::class, 'calculate']);
+Route::get('/shipping/options', [ShippingCostController::class, 'getOptions']);
+Route::get('/shipping/countries', [ShippingCostController::class, 'getCountries']);
+Route::get('/shipping/delivery-methods', [ShippingCostController::class, 'getDeliveryMethods']);
