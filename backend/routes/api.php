@@ -9,6 +9,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubSubcategoryController;
+use App\Http\Controllers\ReviewController;
+
 
 // app()->routeMiddleware([
 //     'is_admin' => IsAdmin::class,
@@ -18,6 +20,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     
@@ -57,6 +60,9 @@ Route::get('/products/popular', [ProductController::class, 'popular']);
 Route::get('/products/by-category', [ProductController::class, 'byCategory']);
 Route::get('/products/by-subcategory', [ProductController::class, 'bySubcategory']);
 Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
+
+Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
 Route::get('/categories/by-name', [CategoryController::class, 'getByName']);
