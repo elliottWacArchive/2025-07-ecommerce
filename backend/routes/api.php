@@ -20,6 +20,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/user/update-credentials', [AuthController::class, 'updateCredentials']);
     Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
