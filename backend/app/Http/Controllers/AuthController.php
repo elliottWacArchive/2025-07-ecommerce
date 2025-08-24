@@ -127,4 +127,35 @@ class AuthController extends Controller
             'user' => $user
         ], 200);
     }
+
+        public function updateCredentials(Request $request)
+    {
+        $user = $request->user(); 
+        $validator = Validator::make($request->all(), [
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed', 
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->filled('email')) {
+            $user->email = $request->email;
+        }
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Informations mises à jour avec succès',
+            'user' => $user
+        ], 200);
+    }
 }
