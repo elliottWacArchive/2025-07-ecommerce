@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import Header from "@/components/Header";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
@@ -41,11 +42,11 @@ export default function Cart() {
         return parseFloat(shippingCost.cost) || 0;
     };
 
+    const total = getCartTotal();
+
     const getTotalWithShipping = () => {
         return total + getShippingCost();
     };
-
-    const total = getCartTotal();
 
     if (loading) {
         return (
@@ -99,7 +100,7 @@ export default function Cart() {
                                         className="border border-[#CECDFF] rounded-xl p-6 bg-gray-50 hover:shadow-md transition-shadow"
                                     >
                                         <div className="flex items-center space-x-6">
-                                            {/* Image du produit en miniature */}
+                                            {/* Image produit */}
                                             <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                                                 {item.image ? (
                                                     <img
@@ -114,7 +115,7 @@ export default function Cart() {
                                                 )}
                                             </div>
 
-                                            {/* Informations du produit */}
+                                            {/* Infos produit */}
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-xl font-semibold text-gray-800 truncate">
                                                     {item.brand &&
@@ -135,9 +136,8 @@ export default function Cart() {
                                                 </p>
                                             </div>
 
-                                            {/* Contrôles et prix */}
+                                            {/* Contrôles */}
                                             <div className="flex items-center space-x-4">
-                                                {/* Sélecteur de quantité */}
                                                 <div className="flex items-center space-x-2">
                                                     <label className="text-sm font-medium text-gray-700">
                                                         Quantité :
@@ -151,8 +151,7 @@ export default function Cart() {
                                                             handleUpdateQuantity(
                                                                 item.id,
                                                                 parseInt(
-                                                                    e.target
-                                                                        .value
+                                                                    e.target.value
                                                                 ),
                                                                 item.stock
                                                             )
@@ -161,7 +160,6 @@ export default function Cart() {
                                                     />
                                                 </div>
 
-                                                {/* Prix total de l'article */}
                                                 <div className="text-right min-w-[80px]">
                                                     <p className="text-lg font-semibold text-gray-800">
                                                         {(
@@ -172,7 +170,6 @@ export default function Cart() {
                                                     </p>
                                                 </div>
 
-                                                {/* Bouton supprimer */}
                                                 <button
                                                     onClick={() =>
                                                         handleRemoveFromCart(
@@ -180,7 +177,6 @@ export default function Cart() {
                                                         )
                                                     }
                                                     className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-                                                    title="Supprimer du panier"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                     Supprimer
@@ -190,7 +186,7 @@ export default function Cart() {
                                     </div>
                                 ))}
 
-                                {/* Calculateur de frais de port */}
+                                {/* Calculateur livraison */}
                                 <div className="border-t border-[#CECDFF] pt-6">
                                     <ShippingCalculator
                                         orderAmount={total}
@@ -198,10 +194,9 @@ export default function Cart() {
                                     />
                                 </div>
 
-                                {/* Résumé et bouton de paiement */}
+                                {/* Résumé */}
                                 <div className="border-t border-[#CECDFF] pt-6">
                                     <div className="space-y-3">
-                                        {/* Sous-total */}
                                         <div className="flex justify-between items-center text-lg">
                                             <span>Sous-total :</span>
                                             <span className="font-semibold">
@@ -209,7 +204,6 @@ export default function Cart() {
                                             </span>
                                         </div>
 
-                                        {/* frais de port */}
                                         <div className="flex justify-between items-center text-lg">
                                             <span>Frais de port :</span>
                                             <span className="font-semibold">
@@ -223,7 +217,6 @@ export default function Cart() {
                                             </span>
                                         </div>
 
-                                        {/* total général */}
                                         <div className="border-t pt-3">
                                             <div className="flex justify-between items-center">
                                                 <div className="text-2xl font-bold text-[#C395E4]">
@@ -233,16 +226,14 @@ export default function Cart() {
                                                     )}{" "}
                                                     €
                                                 </div>
-                                                <button
-                                                    className={`py-3 px-8 rounded-lg transition-colors font-semibold ${
-                                                        shippingCost
-                                                            ? "bg-[#FC87D2] hover:bg-[#f56dc0] text-white"
-                                                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                    }`}
-                                                    disabled={!shippingCost}
+
+                                                {/* 🔹 Bouton toujours violet et actif */}
+                                                <Link
+                                                    href="/pay"
+                                                    className="bg-[#FC87D2] hover:bg-[#f56dc0] text-white font-semibold py-3 px-8 rounded-lg transition-colors"
                                                 >
                                                     Procéder au paiement
-                                                </button>
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>
