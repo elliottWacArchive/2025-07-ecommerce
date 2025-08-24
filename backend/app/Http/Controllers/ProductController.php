@@ -203,4 +203,16 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function related($id)
+{
+    $product = Product::findOrFail($id);
+
+    $related = Product::where('subcategory_id', $product->subcategory_id)
+                ->where('id', '!=', $product->id)
+                ->limit(10)
+                ->get();
+
+    return response()->json($related);
+}
+
 }

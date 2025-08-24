@@ -21,6 +21,21 @@ export default function ProductDetails() {
   const id = useParams();
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  useEffect(() => {
+    async function fetchRelated() {
+      try {
+        const res = await axios.get(
+          `http://localhost:8000/api/products/${id.id}/related`
+        );
+        setRelatedProducts(res.data);
+      } catch (err) {
+        console.error("Erreur chargement produits liés:", err);
+      }
+    }
+    if (id?.id) fetchRelated();
+  }, [id]);
 
   useEffect(() => {
     async function fetchReviews() {
@@ -134,6 +149,38 @@ export default function ProductDetails() {
 
               <NotesOlfactives />
             </div>
+            {/* Produits de la mm sous-catégorie */}
+            {relatedProducts.length > 0 && (
+              <div className="mt-16 lg:col-span-2">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b border-gray-300 pb-2">
+                Ces produits pourraient aussi vous intéresser 
+                </h2>
+                <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                  {relatedProducts.map((prod) => (
+                    <div
+                      key={prod.id}
+                      className="min-w-[200px] bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition flex-shrink-0"
+                    >
+                      <img
+                        src={prod.image}
+                        alt={prod.name}
+                        className="w-full h-40 object-cover rounded-md"
+                      />
+                      <h3 className="mt-3 font-medium text-gray-800 truncate">
+                        {prod.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm">{prod.price} €</p>
+                      <a
+                        href={`/products/${prod.id}`}
+                        className="mt-2 inline-block bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700"
+                      >
+                        Voir
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="mt-12 lg:col-span-2">
               <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b border-gray-300 pb-2">
                 Avis des clients
@@ -181,18 +228,18 @@ export default function ProductDetails() {
                   onSubmit={async (e) => {
                     e.preventDefault();
                     try {
-                        await axios.post(
-                            `http://localhost:8000/api/products/${id.id}/reviews`,
-                            {
-                              rating: newReview.rating,
-                              comment: newReview.comment,
-                            },
-                            {
-                              headers: {
-                                Authorization: `Bearer ${token}`, 
-                              },
-                            }
-                          );                          
+                      await axios.post(
+                        `http://localhost:8000/api/products/${id.id}/reviews`,
+                        {
+                          rating: newReview.rating,
+                          comment: newReview.comment,
+                        },
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        }
+                      );
                       setNewReview({ rating: 5, comment: "" });
                       const res = await axios.get(
                         `http://localhost:8000/api/products/${id.id}/reviews`
@@ -252,6 +299,15 @@ export default function ProductDetails() {
             </div>
           </div>
         </div>
+        <style jsx>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </main>
     </>
   );

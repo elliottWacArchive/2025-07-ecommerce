@@ -62,6 +62,7 @@ Route::get('/products/by-subcategory', [ProductController::class, 'bySubcategory
 Route::get('/products/by-subsubcategory', [ProductController::class, 'bySubSubcategory']);
 
 Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+Route::get('/products/{id}/related', [ProductController::class, 'related']);
 
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
