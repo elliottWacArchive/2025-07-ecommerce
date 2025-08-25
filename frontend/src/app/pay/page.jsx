@@ -382,7 +382,7 @@ export default function Pay() {
                                             type="submit"
                                             className="w-full bg-[#FC87D2] hover:bg-[#f56dc0] text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                                         >
-                                            Choisir la livraison
+                                            Finaliser la commande
                                         </button>
                                     </form>
                                     <button
