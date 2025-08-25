@@ -96,6 +96,7 @@ export default function Dashboard() {
           </h3>
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
             <li>Gérer mes commandes</li>
+            <li>Gérer mes informations</li>
             <li>
               <button
                 onClick={() => setShowModal(true)}
