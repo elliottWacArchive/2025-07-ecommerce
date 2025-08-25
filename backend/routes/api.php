@@ -7,6 +7,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShippingCostController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\OrderController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubSubcategoryController;
@@ -19,6 +21,10 @@ use App\Http\Controllers\ReviewController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Payment routes
+Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+Route::post('/confirm-payment', [PaymentController::class, 'confirmPayment']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/update-credentials', [AuthController::class, 'updateCredentials']);
@@ -33,6 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{productId}', [CartController::class, 'destroy']);
     Route::delete('/cart', [CartController::class, 'clear']);
     Route::post('/cart/sync', [CartController::class, 'sync']);
+    
+    // Order routes for authenticated users
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
 });
 
 // Admin routes
@@ -60,6 +70,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::get('/admin/shipping-costs/{id}', [ShippingCostController::class, 'show']);
     Route::put('/admin/shipping-costs/{id}', [ShippingCostController::class, 'update']);
     Route::delete('/admin/shipping-costs/{id}', [ShippingCostController::class, 'destroy']);
+    
+    Route::get('/admin/orders', [OrderController::class, 'getAllOrders']);
 });
 
 // Produits
@@ -85,3 +97,5 @@ Route::post('/shipping/calculate', [ShippingCostController::class, 'calculate'])
 Route::get('/shipping/options', [ShippingCostController::class, 'getOptions']);
 Route::get('/shipping/countries', [ShippingCostController::class, 'getCountries']);
 Route::get('/shipping/delivery-methods', [ShippingCostController::class, 'getDeliveryMethods']);
+
+Route::post('/orders', [OrderController::class, 'store']);
