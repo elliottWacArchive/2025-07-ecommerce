@@ -377,15 +377,7 @@ export default function Pay() {
                                             className="w-full border rounded-lg px-4 py-2"
                                             required
                                         />
-                                        <input
-                                            type="text"
-                                            name="address"
-                                            value={guestInfo.address}
-                                            onChange={handleGuestInfoChange}
-                                            placeholder="Adresse de livraison"
-                                            className="w-full border rounded-lg px-4 py-2"
-                                            required
-                                        />
+                                
                                         <button
                                             type="submit"
                                             className="w-full bg-[#FC87D2] hover:bg-[#f56dc0] text-white font-semibold py-3 px-6 rounded-lg transition-colors"
