@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminHeader } from "@/components/admin-header";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -12,6 +11,14 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +50,10 @@ import {
     Boxes,
     Tag,
     Image,
+    RefreshCw,
+    ChevronUp,
+    ChevronDown,
+    ChevronsUpDown,
 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -60,7 +71,13 @@ export default function AdminProductsPage() {
         stock: "",
         brand: "",
         category_id: "",
-        image: null,
+        images: [],
+    });
+
+    // État pour le tri
+    const [sortConfig, setSortConfig] = useState({
+        key: null,
+        direction: 'asc'
     });
 
     const { user, token, isAdmin, loading: authLoading } = useAuth();
@@ -74,13 +91,79 @@ export default function AdminProductsPage() {
         }
     };
 
+    // Fonction de tri
+    const sortProducts = (products, key, direction) => {
+        return [...products].sort((a, b) => {
+            let aValue = a[key];
+            let bValue = b[key];
+
+            // Gestion des valeurs nulles/undefined
+            if (aValue === null || aValue === undefined) aValue = '';
+            if (bValue === null || bValue === undefined) bValue = '';
+
+            // Gestion des catégories (objet avec propriété name)
+            if (key === 'category' && aValue && bValue) {
+                aValue = aValue.name || '';
+                bValue = bValue.name || '';
+            }
+
+            // Tri numérique pour prix et stock
+            if (key === 'price' || key === 'stock') {
+                aValue = parseFloat(aValue) || 0;
+                bValue = parseFloat(bValue) || 0;
+            }
+
+            // Tri alphabétique pour les autres champs
+            if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+            if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+            if (aValue < bValue) {
+                return direction === 'asc' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    };
+
+    // Fonction pour gérer le clic sur l'en-tête de colonne
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    // Fonction pour obtenir l'icône de tri
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) {
+            return <ChevronsUpDown className="h-4 w-4" />;
+        }
+        return sortConfig.direction === 'asc' 
+            ? <ChevronUp className="h-4 w-4" /> 
+            : <ChevronDown className="h-4 w-4" />;
+    };
+
+    // Produits triés
+    const sortedProducts = sortProducts(products, sortConfig.key, sortConfig.direction);
+
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch("http://localhost:8000/api/products");
+            if (response.ok) {
+                const data = await response.json();
+                setProducts(data);
+            }
+        } catch (err) {
+            console.error("Erreur sur le chargement des produits:", err);
+            showToast("Erreur lors du chargement des produits", "error");
+        }
+    };
+
     useEffect(() => {
-        fetch("http://localhost:8000/api/products")
-            .then((res) => res.json())
-            .then((data) => setProducts(data))
-            .catch((err) =>
-                console.error("Erreur sur le chargement des produits:", err)
-            );
+        fetchProducts();
     }, []);
 
     useEffect(() => {
@@ -120,7 +203,7 @@ export default function AdminProductsPage() {
             stock: "",
             brand: "",
             category_id: "",
-            image: null,
+            images: [],
         });
         setIsModalOpen(true);
     };
@@ -135,7 +218,7 @@ export default function AdminProductsPage() {
             stock: product.stock,
             brand: product.brand || "",
             category_id: product.category_id || "",
-            image: null,
+            images: product.images || [], // Assuming product.images is an array of URLs
         });
         setIsModalOpen(true);
     };
@@ -166,13 +249,7 @@ export default function AdminProductsPage() {
             );
 
             if (response.ok) {
-                const productsResponse = await fetch(
-                    "http://localhost:8000/api/products"
-                );
-                if (productsResponse.ok) {
-                    const updatedProducts = await productsResponse.json();
-                    setProducts(updatedProducts);
-                }
+                await fetchProducts();
                 showToast("Produit supprimé avec succès !");
             } else {
                 const errorData = await response.json();
@@ -189,9 +266,10 @@ export default function AdminProductsPage() {
 
     const handleChange = (e) => {
         if (e.target.type === "file") {
+            const files = Array.from(e.target.files);
             setFormData({
                 ...formData,
-                [e.target.name]: e.target.files[0],
+                images: [...formData.images, ...files],
             });
         } else {
             setFormData({
@@ -201,13 +279,28 @@ export default function AdminProductsPage() {
         }
     };
 
+    const handleRemoveImage = (index) => {
+        const newImages = formData.images.filter((_, i) => i !== index);
+        setFormData({
+            ...formData,
+            images: newImages,
+        });
+    };
+
+    const handleImageReorder = (fromIndex, toIndex) => {
+        const newImages = [...formData.images];
+        const [removed] = newImages.splice(fromIndex, 1);
+        newImages.splice(toIndex, 0, removed);
+        setFormData({
+            ...formData,
+            images: newImages,
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage("");
-
-        console.log("Token utilisé:", token);
-        console.log("Données envoyées:", formData);
 
         try {
             const url = isEditMode
@@ -217,7 +310,14 @@ export default function AdminProductsPage() {
             const submitData = new FormData();
             Object.keys(formData).forEach((key) => {
                 if (formData[key] !== null && formData[key] !== "") {
-                    submitData.append(key, formData[key]);
+                    if (key === 'images' && formData[key].length > 0) {
+                        // Ajouter chaque image individuellement
+                        formData[key].forEach((image, index) => {
+                            submitData.append(`images[${index}]`, image);
+                        });
+                    } else if (key !== 'images') {
+                        submitData.append(key, formData[key]);
+                    }
                 }
             });
 
@@ -229,25 +329,15 @@ export default function AdminProductsPage() {
                 body: submitData,
             });
 
-            console.log("Statut de la réponse:", response.status);
-
             if (response.ok) {
                 const successMessage = isEditMode
                     ? "Produit modifié avec succès !"
                     : "Produit ajouté avec succès !";
                 showToast(successMessage);
                 handleCloseModal();
-
-                const productsResponse = await fetch(
-                    "http://localhost:8000/api/products"
-                );
-                if (productsResponse.ok) {
-                    const updatedProducts = await productsResponse.json();
-                    setProducts(updatedProducts);
-                }
+                await fetchProducts();
             } else {
                 const errorText = await response.text();
-                console.log("Erreur de réponse:", errorText);
                 try {
                     const error = JSON.parse(errorText);
                     showToast(
@@ -275,6 +365,25 @@ export default function AdminProductsPage() {
         }
     };
 
+    const getStockStatus = (stock) => {
+        if (stock === 0) {
+            return {
+                text: "Stock épuisé",
+                variant: "destructive"
+            };
+        } else if (stock <= 10) {
+            return {
+                text: "Quantités limitées",
+                variant: "secondary"
+            };
+        } else {
+            return {
+                text: "En stock",
+                variant: "default"
+            };
+        }
+    };
+
     if (authLoading || loading) {
         return (
             <div className="container mx-auto p-6 space-y-6">
@@ -282,23 +391,22 @@ export default function AdminProductsPage() {
                     <Skeleton className="h-8 w-64" />
                     <Skeleton className="h-10 w-48" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => (
-                        <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-6 w-3/4" />
-                                <Skeleton className="h-4 w-1/2" />
-                            </CardHeader>
-                            <CardContent>
-                                <Skeleton className="h-32 w-full mb-4" />
-                                <div className="space-y-2">
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-2/3" />
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="space-y-4">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-center space-x-4">
+                                    <Skeleton className="h-4 w-8" />
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-4 w-48" />
+                                    <Skeleton className="h-6 w-16" />
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-8 w-20" />
+                                </div>
+                            ))}
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
-                </div>
             </div>
         );
     }
@@ -317,364 +425,516 @@ export default function AdminProductsPage() {
     }
 
     return (
-        <>
-            <AdminHeader title="Produits" />
-            <div className="container mx-auto p-6 space-y-6">
-                <div className="flex items-center justify-end">
-                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                        <DialogTrigger asChild>
-                            <Button onClick={handleOpenModal} className="gap-2">
-                                <Plus className="h-4 w-4" />
-                                Ajouter un produit
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                    {isEditMode ? (
-                                        <>
-                                            <Edit className="h-5 w-5" />
-                                            Modifier le produit
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="h-5 w-5" />
-                                            Ajouter un produit
-                                        </>
-                                    )}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {isEditMode
-                                        ? "Modifiez les informations du produit ci-dessous."
-                                        : "Remplissez les informations du nouveau produit."}
-                                </DialogDescription>
-                            </DialogHeader>
+        <div className="container mx-auto px-4 py-8 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                        <Package className="h-8 w-8" />
+                        Gestion des Produits
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Gérez votre catalogue de produits
+                    </p>
+                </div>
+                <div className="flex gap-3 items-center">
+                    <Button
+                        variant="outline"
+                        onClick={fetchProducts}
+                        className="gap-2"
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                        Recharger
+                    </Button>
+                    <Badge variant="secondary" className="gap-1">
+                        <Package className="h-3 w-3" />
+                        {products.length} produits
+                    </Badge>
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogTrigger asChild>
+                        <Button onClick={handleOpenModal} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Ajouter un produit
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                {isEditMode ? (
+                                    <>
+                                        <Edit className="h-5 w-5" />
+                                        Modifier le produit
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="h-5 w-5" />
+                                        Ajouter un produit
+                                    </>
+                                )}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {isEditMode
+                                    ? "Modifiez les informations du produit ci-dessous."
+                                    : "Remplissez les informations du nouveau produit."}
+                            </DialogDescription>
+                        </DialogHeader>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">
-                                            Nom du produit *
-                                        </Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="Nom du produit"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="brand">Marque</Label>
-                                        <Input
-                                            id="brand"
-                                            name="brand"
-                                            value={formData.brand}
-                                            onChange={handleChange}
-                                            placeholder="Marque du produit"
-                                        />
-                                    </div>
-                                </div>
-
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="description">
-                                        Description *
+                                    <Label htmlFor="name">
+                                        Nom du produit *
                                     </Label>
-                                    <Textarea
-                                        id="description"
-                                        name="description"
-                                        value={formData.description}
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
                                         onChange={handleChange}
                                         required
-                                        placeholder="Description du produit"
-                                        className="min-h-[100px]"
+                                        placeholder="Nom du produit"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="price"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Euro className="h-4 w-4" />
-                                            Prix *
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            id="price"
-                                            name="price"
-                                            value={formData.price}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="0.00"
-                                            step="0.01"
-                                            min="0"
-                                        />
-                                    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="brand">Marque</Label>
+                                    <Input
+                                        id="brand"
+                                        name="brand"
+                                        value={formData.brand}
+                                        onChange={handleChange}
+                                        placeholder="Marque du produit"
+                                    />
+                                </div>
+                            </div>
 
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="stock"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Boxes className="h-4 w-4" />
-                                            Stock *
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            id="stock"
-                                            name="stock"
-                                            value={formData.stock}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="0"
-                                            min="0"
-                                        />
-                                    </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">
+                                    Description *
+                                </Label>
+                                <Textarea
+                                    id="description"
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Description du produit"
+                                    className="min-h-[100px]"
+                                />
+                            </div>
 
-                                    <div className="space-y-2">
-                                        <Label
-                                            htmlFor="category_id"
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Tag className="h-4 w-4" />
-                                            Catégorie
-                                        </Label>
-                                        <Select
-                                            value={formData.category_id.toString()}
-                                            onValueChange={(value) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    category_id: value,
-                                                })
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Sélectionner une catégorie" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem
-                                                        key={category.id}
-                                                        value={category.id.toString()}
-                                                    >
-                                                        {category.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor="price"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Euro className="h-4 w-4" />
+                                        Prix *
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        id="price"
+                                        name="price"
+                                        value={formData.price}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="0.00"
+                                        step="0.01"
+                                        min="0"
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label
-                                        htmlFor="image"
+                                        htmlFor="stock"
                                         className="flex items-center gap-2"
                                     >
-                                        <Image className="h-4 w-4" />
-                                        Image
+                                        <Boxes className="h-4 w-4" />
+                                        Stock *
                                     </Label>
                                     <Input
-                                        type="file"
-                                        id="image"
-                                        name="image"
-                                        accept="image/*"
+                                        type="number"
+                                        id="stock"
+                                        name="stock"
+                                        value={formData.stock}
                                         onChange={handleChange}
+                                        required
+                                        placeholder="0"
+                                        min="0"
                                     />
-                                    {isEditMode &&
-                                        products.find(
-                                            (p) => p.id === editingProductId
-                                        )?.image && (
-                                            <div className="mt-2 p-3 border rounded-lg">
-                                                <p className="text-sm text-muted-foreground mb-2">
-                                                    Image actuelle :
-                                                </p>
-                                                <div className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
-                                                    <img
-                                                        src={`http://localhost:8000${
-                                                            products.find(
-                                                                (p) =>
-                                                                    p.id ===
-                                                                    editingProductId
-                                                            )?.image
-                                                        }`}
-                                                        alt="Image actuelle"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleCloseModal}
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor="category_id"
+                                        className="flex items-center gap-2"
                                     >
-                                        Annuler
-                                    </Button>
-                                    <Button type="submit" disabled={loading}>
-                                        {loading ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                {isEditMode
-                                                    ? "Modification..."
-                                                    : "Ajout..."}
-                                            </>
-                                        ) : (
-                                            <>
-                                                {isEditMode ? (
-                                                    <>
-                                                        <Edit className="h-4 w-4 mr-2" />
-                                                        Modifier
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        Ajouter
-                                                    </>
-                                                )}
-                                            </>
-                                        )}
-                                    </Button>
+                                        <Tag className="h-4 w-4" />
+                                        Catégorie
+                                    </Label>
+                                    <Select
+                                        value={formData.category_id.toString()}
+                                        onValueChange={(value) =>
+                                            setFormData({
+                                                ...formData,
+                                                category_id: value,
+                                            })
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Sélectionner une catégorie" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((category) => (
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={category.id.toString()}
+                                                >
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+                            </div>
 
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">
-                            Liste des produits ({products.length})
-                        </h2>
-                    </div>
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="images"
+                                    className="flex items-center gap-2"
+                                >
+                                    <Image className="h-4 w-4" />
+                                    Images
+                                </Label>
+                                <Input
+                                    type="file"
+                                    id="images"
+                                    name="images"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleChange}
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Vous pouvez sélectionner plusieurs images. La première image sera l'image principale.
+                                </p>
 
-                    {products.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
-                            <table className="min-w-full text-sm">
-                                <thead className="bg-gray-100 text-left text-gray-600">
-                                    <tr>
-                                        <th className="px-4 py-2">Produit</th>
-                                        <th className="px-4 py-2">Prix</th>
-                                        <th className="px-4 py-2">Stock</th>
-                                        <th className="px-4 py-2">Marque</th>
-                                        <th className="px-4 py-2">Catégorie</th>
-                                        <th className="px-4 py-2">Statut</th>
-                                        <th className="px-4 py-2 text-center">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {products.map((product) => (
-                                        <tr
-                                            key={product.id}
-                                            className="border-t"
-                                        >
-                                            <td className="px-4 py-3 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-md bg-gray-100 overflow-hidden">
-                                                    {product.image ? (
-                                                        <img
-                                                            src={`http://localhost:8000${product.image}`}
-                                                            alt={product.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                            <Image className="h-5 w-5" />
+                                {/* Prévisualisation des images sélectionnées */}
+                                {formData.images.length > 0 && (
+                                    <div className="mt-4 space-y-3">
+                                        <Label className="text-sm font-medium">
+                                            Images sélectionnées ({formData.images.length})
+                                        </Label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {formData.images.map((image, index) => (
+                                                <div key={index} className="relative group">
+                                                    <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden">
+                                                        {image instanceof File ? (
+                                                            <img
+                                                                src={URL.createObjectURL(image)}
+                                                                alt={`Image ${index + 1}`}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={`http://localhost:8000${image}`}
+                                                                alt={`Image ${index + 1}`}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Indicateur d'image principale */}
+                                                    {index === 0 && (
+                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                            Principale
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Bouton supprimer */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveImage(index)}
+                                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Supprimer cette image"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                    
+                                                    {/* Boutons de réorganisation */}
+                                                    {formData.images.length > 1 && (
+                                                        <div className="absolute bottom-1 left-1 right-1 flex gap-1">
+                                                            {index > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleImageReorder(index, index - 1)}
+                                                                    className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    title="Déplacer vers la gauche"
+                                                                >
+                                                                    ←
+                                                                </button>
+                                                            )}
+                                                            {index < formData.images.length - 1 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleImageReorder(index, index + 1)}
+                                                                    className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    title="Déplacer vers la droite"
+                                                                >
+                                                                    →
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span className="font-medium text-gray-900">
-                                                    {product.name}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {product.price}€
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {product.stock}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {product.brand || "-"}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {product.category?.name || "-"}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                <Badge
-                                                    variant={
-                                                        product.stock > 0
-                                                            ? "default"
-                                                            : "destructive"
-                                                    }
-                                                >
-                                                    {product.stock > 0
-                                                        ? "En stock"
-                                                        : "Rupture"}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-2 text-right space-x-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        handleEditProduct(
-                                                            product
-                                                        )
-                                                    }
-                                                >
-                                                    <Edit className="h-4 w-4 mr-1" />
-                                                    Modifier
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={() =>
-                                                        handleDeleteProduct(
-                                                            product.id
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4 mr-1" />
-                                                    Supprimer
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <Card className="p-12">
-                            <div className="text-center space-y-3">
-                                <Package className="h-12 w-12 text-muted-foreground mx-auto" />
-                                <div className="space-y-1">
-                                    <h3 className="text-lg font-semibold">
-                                        Aucun produit
-                                    </h3>
-                                    <p className="text-muted-foreground">
-                                        Commencez par ajouter votre premier
-                                        produit
-                                    </p>
-                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Affichage des images existantes en mode édition */}
+                                {isEditMode && products.find(p => p.id === editingProductId)?.images && (
+                                    <div className="mt-4 p-3 border rounded-lg">
+                                        <p className="text-sm text-muted-foreground mb-2">
+                                            Images actuelles :
+                                        </p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {products.find(p => p.id === editingProductId)?.images.map((image, index) => (
+                                                <div key={index} className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
+                                                    <img
+                                                        src={`http://localhost:8000${image}`}
+                                                        alt={`Image actuelle ${index + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    {index === 0 && (
+                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                            Principale
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4">
                                 <Button
-                                    onClick={handleOpenModal}
-                                    className="gap-2"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleCloseModal}
                                 >
-                                    <Plus className="h-4 w-4" />
-                                    Ajouter un produit
+                                    Annuler
+                                </Button>
+                                <Button type="submit" disabled={loading}>
+                                    {loading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            {isEditMode
+                                                ? "Modification..."
+                                                : "Ajout..."}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {isEditMode ? (
+                                                <>
+                                                    <Edit className="h-4 w-4 mr-2" />
+                                                    Modifier
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Plus className="h-4 w-4 mr-2" />
+                                                    Ajouter
+                                                </>
+                                            )}
+                                        </>
+                                    )}
                                 </Button>
                             </div>
-                        </Card>
-                    )}
-                </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
-        </>
+                </div>
+
+            {/* Products Table */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Liste des Produits</CardTitle>
+                    <CardDescription>
+                        Visualisez et gérez tous vos produits. Cliquez sur les en-têtes de colonnes pour trier.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {sortedProducts.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead 
+                                        className="w-16 cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort('id')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            ID
+                                            {getSortIcon('id')}
+                                        </div>
+                                    </TableHead>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Nom
+                                            {getSortIcon('name')}
+                                        </div>
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort('brand')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Marque
+                                            {getSortIcon('brand')}
+                                </div>
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort('price')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Prix
+                                            {getSortIcon('price')}
+                                    </div>
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort('stock')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Stock
+                                            {getSortIcon('stock')}
+                                        </div>
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer hover:bg-gray-50"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Catégorie
+                                        </div>
+                                    </TableHead>
+                                    <TableHead className="text-center w-32">
+                                        Actions
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {sortedProducts.map((product) => {
+                                    const stockStatus = getStockStatus(product.stock);
+                                    return (
+                                        <TableRow
+                                            key={product.id}
+                                            className="hover:bg-muted/50"
+                                        >
+                                            <TableCell className="font-medium">
+                                                {product.id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {product.images && product.images.length > 0 ? (
+                                                    <div className="flex gap-1">
+                                                        {product.images.slice(0, 3).map((image, index) => (
+                                                            <div key={index} className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden">
+                                                                <img
+                                                                    src={`http://localhost:8000${image}`}
+                                                                    alt={`${product.name} ${index + 1}`}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                                {index === 0 && (
+                                                                    <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-br">
+                                                                        P
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        {product.images.length > 3 && (
+                                                            <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center text-xs text-gray-500">
+                                                                +{product.images.length - 3}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                                                        <Image className="h-6 w-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {product.name}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.brand || "-"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {product.price}€
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">
+                                                        {product.stock}
+                                                </span>
+                                                    <Badge variant={stockStatus.variant}>
+                                                        {stockStatus.text}
+                                                    </Badge>
+                                            </div>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.category?.name || "-"}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center justify-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() =>
+                                                handleEditProduct(product)
+                                            }
+                                        >
+                                            <Edit className="h-3 w-3 mr-1" />
+                                            Modifier
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() =>
+                                                handleDeleteProduct(product.id)
+                                            }
+                                        >
+                                            <Trash2 className="h-3 w-3 mr-1" />
+                                            Supprimer
+                                        </Button>
+                                    </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="text-center py-12">
+                            <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-semibold text-foreground">
+                                    Aucun produit
+                                </h3>
+                            <p className="mt-2 text-muted-foreground">
+                                    Commencez par ajouter votre premier produit
+                                </p>
+                            <Button onClick={handleOpenModal} className="mt-4 gap-2">
+                                <Plus className="h-4 w-4" />
+                                Ajouter un produit
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+                    </Card>
+        </div>
     );
 }

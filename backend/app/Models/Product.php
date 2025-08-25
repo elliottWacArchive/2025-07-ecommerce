@@ -18,9 +18,24 @@ class Product extends Model
         'subcategory_id',      
         'sub_subcategory_id', 
         'brand',
+        'images',
         'image',
         'views',
     ];
+
+    protected $casts = [
+        'images' => 'array',
+    ];
+
+    // Accesseur pour obtenir toutes les images
+    public function getAllImagesAttribute()
+    {
+        $images = $this->images ?? [];
+        if ($this->image && !in_array($this->image, $images)) {
+            array_unshift($images, $this->image);
+        }
+        return $images;
+    }
 
     public function category()
     {

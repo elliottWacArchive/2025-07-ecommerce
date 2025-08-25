@@ -1,4 +1,5 @@
 import { AdminHeader } from "@/components/admin-header";
+import Link from "next/link";
 
 export default function Page() {
     return (
@@ -9,25 +10,31 @@ export default function Page() {
                     <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
                         <div className="text-center">
                             <h3 className="font-semibold">Produits</h3>
-                            <p className="text-muted-foreground">
-                                Gérer les produits
-                            </p>
+                            <Link href={"/admin/products"}>
+                                <p className="text-muted-foreground hover:underline">
+                                    Gérer les produits
+                                </p>
+                            </Link>
                         </div>
                     </div>
                     <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
                         <div className="text-center">
                             <h3 className="font-semibold">Catégories</h3>
-                            <p className="text-muted-foreground">
-                                Gérer les catégories
-                            </p>
+                            <Link href={"admin/categories"}>
+                                <p className="text-muted-foreground hover:underline">
+                                    Gérer les catégories
+                                </p>
+                            </Link>
                         </div>
                     </div>
                     <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
                         <div className="text-center">
                             <h3 className="font-semibold">Utilisateurs</h3>
-                            <p className="text-muted-foreground">
-                                Gérer les utilisateurs
-                            </p>
+                            <Link href={"admin/users"}>
+                                <p className="text-muted-foreground hover:underline">
+                                    Gérer les utilisateurs
+                                </p>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -36,10 +43,10 @@ export default function Page() {
                         <h2 className="text-2xl font-bold mb-2">
                             Bienvenue dans l'administration
                         </h2>
-                        <p className="text-muted-foreground">
-                            Utilisez la sidebar pour naviguer entre les
-                            différentes sections
-                        </p>
+                            <p className="text-muted-foreground">
+                                Utilisez la sidebar pour naviguer entre les
+                                différentes sections
+                            </p>
                     </div>
                 </div>
             </div>
