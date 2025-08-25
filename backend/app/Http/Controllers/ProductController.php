@@ -86,7 +86,7 @@ class ProductController extends Controller
                 'message' => 'Erreur lors de la création du produit',
                 'error' => $e->getMessage()
             ], 500);
-        }
+        };
     }
 
     public function update(Request $request, $id)

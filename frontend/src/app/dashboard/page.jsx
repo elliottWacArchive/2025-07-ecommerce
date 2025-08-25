@@ -95,7 +95,6 @@ export default function Dashboard() {
             Actions disponibles :
           </h3>
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
-            <li>Voir mon profil</li>
             <li>Gérer mes commandes</li>
             <li>
               <button

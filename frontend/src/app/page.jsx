@@ -118,7 +118,7 @@ export default function Home() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-10 px-6 py-12 bg-[#E9E5FF]">
                 <div
-                    onClick={() => router.push("/a-propos")}
+                    onClick={() => router.push("/category?category=Soins")}
                     className="relative cursor-pointer group w-3/4 mx-auto aspect-square rounded-xl overflow-hidden shadow-lg"
                 >
                     <Image
@@ -135,7 +135,7 @@ export default function Home() {
                 </div>
 
                 <div
-                    onClick={() => router.push("/a-propos")}
+                    onClick={() => router.push("/category?category=Soins")}
                     className="relative cursor-pointer group w-3/4 mx-auto aspect-square rounded-xl overflow-hidden shadow-lg"
                 >
                     <Image

@@ -187,14 +187,6 @@ export default function Cart() {
                                     </div>
                                 ))}
 
-                                {/* Calculateur livraison */}
-                                <div className="border-t border-[#CECDFF] pt-6">
-                                    <ShippingCalculator
-                                        orderAmount={total}
-                                        onShippingChange={handleShippingChange}
-                                    />
-                                </div>
-
                                 {/* Résumé */}
                                 <div className="border-t border-[#CECDFF] pt-6">
                                     <div className="space-y-3">
