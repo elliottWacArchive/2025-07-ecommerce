@@ -103,7 +103,11 @@ export default function ProductDetails() {
     );
   }
 
-  const productImages = [product.image].filter(Boolean);
+  const productImages = product.images && product.images.length > 0 
+    ? product.images 
+    : product.image 
+      ? [product.image] 
+      : [];
 
   return (
     <>

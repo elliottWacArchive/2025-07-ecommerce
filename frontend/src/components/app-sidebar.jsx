@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { Home } from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
@@ -104,6 +104,22 @@ export function AppSidebar({ ...props }) {
                 <SearchForm /> */}
             </SidebarHeader>
             <SidebarContent>
+                {/* Bouton Accueil */}
+                <SidebarGroup>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+                                        <Home className="w-4 h-4" />
+                                        Retour à l'accueil
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
                 {data.navMain.map((item) => (
                     <SidebarGroup key={item.title}>
                         <SidebarGroupLabel>{item.title}</SidebarGroupLabel>

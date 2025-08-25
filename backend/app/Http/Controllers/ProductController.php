@@ -58,15 +58,25 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
-                $image->move(public_path('products'), $imageName);
-                $validated['image'] = '/products/' . $imageName;
+            $images = [];
+            
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $imageName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
+                    $image->move(public_path('products'), $imageName);
+                    $images[] = '/products/' . $imageName;
+                }
+            }
+            
+            $validated['images'] = $images;
+            
+            // Garder la première image comme image principale pour compatibilité
+            if (!empty($images)) {
+                $validated['image'] = $images[0];
             }
 
             $product = Product::create($validated);
@@ -88,21 +98,36 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
             $product = Product::findOrFail($id);
+            $newImages = [];
             
-            if ($request->hasFile('image')) {
-                if ($product->image && file_exists(public_path($product->image))) {
-                    unlink(public_path($product->image));
+            if ($request->hasFile('images')) {
+                // Supprimer les anciennes images
+                if ($product->images) {
+                    foreach ($product->images as $oldImage) {
+                        if (file_exists(public_path($oldImage))) {
+                            unlink(public_path($oldImage));
+                        }
+                    }
                 }
                 
-                $image = $request->file('image');
-                $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
-                $image->move(public_path('products'), $imageName);
-                $validated['image'] = '/products/' . $imageName;
+                // Traiter les nouvelles images
+                foreach ($request->file('images') as $image) {
+                    $imageName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
+                    $image->move(public_path('products'), $imageName);
+                    $newImages[] = '/products/' . $imageName;
+                }
+                
+                $validated['images'] = $newImages;
+                
+                // Mettre à jour l'image principale
+                if (!empty($newImages)) {
+                    $validated['image'] = $newImages[0];
+                }
             }
             
             $product->update($validated);
