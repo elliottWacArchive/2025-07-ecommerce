@@ -56,6 +56,16 @@ const navConfig = [
         ],
     },
     {
+        title: "Commandes",
+        url: "#",
+        items: [
+            {
+                title: "Toutes les commandes",
+                url: "/admin/orders",
+            },
+        ],
+    },
+    {
         title: "Livraison",
         url: "#",
         items: [
