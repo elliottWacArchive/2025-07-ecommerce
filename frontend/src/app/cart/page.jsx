@@ -151,7 +151,8 @@ export default function Cart() {
                                                             handleUpdateQuantity(
                                                                 item.id,
                                                                 parseInt(
-                                                                    e.target.value
+                                                                    e.target
+                                                                        .value
                                                                 ),
                                                                 item.stock
                                                             )
@@ -227,7 +228,6 @@ export default function Cart() {
                                                     €
                                                 </div>
 
-                                                {/* 🔹 Bouton toujours violet et actif */}
                                                 <Link
                                                     href="/pay"
                                                     className="bg-[#FC87D2] hover:bg-[#f56dc0] text-white font-semibold py-3 px-8 rounded-lg transition-colors"
