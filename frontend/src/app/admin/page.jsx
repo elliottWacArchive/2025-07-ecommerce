@@ -6,7 +6,7 @@ export default function Page() {
         <>
             <AdminHeader title="Tableau de bord" />
             <div className="flex flex-1 flex-col gap-4 p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {/* Produits */}
                     <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
                         <div className="text-center">
@@ -40,19 +40,6 @@ export default function Page() {
                                     Gérer les utilisateurs
                                 </p>
                             </Link>
-                        </div>
-                    </div>
-
-                    {/* Export Produits */}
-                    <div className="bg-muted/50 aspect-video rounded-xl flex items-center justify-center">
-                        <div className="text-center">
-                            <h3 className="font-semibold">Export Produits</h3>
-                            <a
-                                href="/api/products"
-                                className="text-muted-foreground hover:underline"
-                            >
-                                Télécharger Excel
-                            </a>
                         </div>
                     </div>
                 </div>

@@ -54,6 +54,7 @@ import {
     ChevronUp,
     ChevronDown,
     ChevronsUpDown,
+    Download,
 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -144,6 +145,13 @@ export default function AdminProductsPage() {
         return sortConfig.direction === 'asc' 
             ? <ChevronUp className="h-4 w-4" /> 
             : <ChevronDown className="h-4 w-4" />;
+    };
+
+    // Fonction pour télécharger l'export Excel
+    const handleExportExcel = () => {
+        const link = document.createElement('a');
+        link.href = '/api/products';
+        link.click();
     };
 
     // Produits triés
@@ -404,9 +412,9 @@ export default function AdminProductsPage() {
                                     <Skeleton className="h-8 w-20" />
                                 </div>
                             ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -426,7 +434,7 @@ export default function AdminProductsPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 space-y-6">
-            {/* Header */}
+            {/* Header avec bouton Excel en haut */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
@@ -440,6 +448,14 @@ export default function AdminProductsPage() {
                 <div className="flex gap-3 items-center">
                     <Button
                         variant="outline"
+                        onClick={handleExportExcel}
+                        className="gap-2"
+                    >
+                        <Download className="h-4 w-4" />
+                        Télécharger tous les produits (Format Excel)
+                    </Button>
+                    <Button
+                        variant="outline"
                         onClick={fetchProducts}
                         className="gap-2"
                     >
@@ -450,311 +466,311 @@ export default function AdminProductsPage() {
                         <Package className="h-3 w-3" />
                         {products.length} produits
                     </Badge>
-                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                    <DialogTrigger asChild>
-                        <Button onClick={handleOpenModal} className="gap-2">
-                            <Plus className="h-4 w-4" />
-                            Ajouter un produit
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                {isEditMode ? (
-                                    <>
-                                        <Edit className="h-5 w-5" />
-                                        Modifier le produit
-                                    </>
-                                ) : (
-                                    <>
-                                        <Plus className="h-5 w-5" />
-                                        Ajouter un produit
-                                    </>
-                                )}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {isEditMode
-                                    ? "Modifiez les informations du produit ci-dessous."
-                                    : "Remplissez les informations du nouveau produit."}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">
-                                        Nom du produit *
-                                    </Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Nom du produit"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="brand">Marque</Label>
-                                    <Input
-                                        id="brand"
-                                        name="brand"
-                                        value={formData.brand}
-                                        onChange={handleChange}
-                                        placeholder="Marque du produit"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description">
-                                    Description *
-                                </Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Description du produit"
-                                    className="min-h-[100px]"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="price"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Euro className="h-4 w-4" />
-                                        Prix *
-                                    </Label>
-                                    <Input
-                                        type="number"
-                                        id="price"
-                                        name="price"
-                                        value={formData.price}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0.00"
-                                        step="0.01"
-                                        min="0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="stock"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Boxes className="h-4 w-4" />
-                                        Stock *
-                                    </Label>
-                                    <Input
-                                        type="number"
-                                        id="stock"
-                                        name="stock"
-                                        value={formData.stock}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0"
-                                        min="0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label
-                                        htmlFor="category_id"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Tag className="h-4 w-4" />
-                                        Catégorie
-                                    </Label>
-                                    <Select
-                                        value={formData.category_id.toString()}
-                                        onValueChange={(value) =>
-                                            setFormData({
-                                                ...formData,
-                                                category_id: value,
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner une catégorie" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem
-                                                    key={category.id}
-                                                    value={category.id.toString()}
-                                                >
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="images"
-                                    className="flex items-center gap-2"
-                                >
-                                    <Image className="h-4 w-4" />
-                                    Images
-                                </Label>
-                                <Input
-                                    type="file"
-                                    id="images"
-                                    name="images"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleChange}
-                                />
-                                <p className="text-xs text-gray-500">
-                                    Vous pouvez sélectionner plusieurs images. La première image sera l'image principale.
-                                </p>
-
-                                {/* Prévisualisation des images sélectionnées */}
-                                {formData.images.length > 0 && (
-                                    <div className="mt-4 space-y-3">
-                                        <Label className="text-sm font-medium">
-                                            Images sélectionnées ({formData.images.length})
-                                        </Label>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            {formData.images.map((image, index) => (
-                                                <div key={index} className="relative group">
-                                                    <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden">
-                                                        {image instanceof File ? (
-                                                            <img
-                                                                src={URL.createObjectURL(image)}
-                                                                alt={`Image ${index + 1}`}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src={`http://localhost:8000${image}`}
-                                                                alt={`Image ${index + 1}`}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        )}
-                                                    </div>
-                                                    
-                                                    {/* Indicateur d'image principale */}
-                                                    {index === 0 && (
-                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
-                                                            Principale
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {/* Bouton supprimer */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveImage(index)}
-                                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Supprimer cette image"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                    
-                                                    {/* Boutons de réorganisation */}
-                                                    {formData.images.length > 1 && (
-                                                        <div className="absolute bottom-1 left-1 right-1 flex gap-1">
-                                                            {index > 0 && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleImageReorder(index, index - 1)}
-                                                                    className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    title="Déplacer vers la gauche"
-                                                                >
-                                                                    ←
-                                                                </button>
-                                                            )}
-                                                            {index < formData.images.length - 1 && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleImageReorder(index, index + 1)}
-                                                                    className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    title="Déplacer vers la droite"
-                                                                >
-                                                                    →
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Affichage des images existantes en mode édition */}
-                                {isEditMode && products.find(p => p.id === editingProductId)?.images && (
-                                    <div className="mt-4 p-3 border rounded-lg">
-                                        <p className="text-sm text-muted-foreground mb-2">
-                                            Images actuelles :
-                                        </p>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            {products.find(p => p.id === editingProductId)?.images.map((image, index) => (
-                                                <div key={index} className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
-                                                    <img
-                                                        src={`http://localhost:8000${image}`}
-                                                        alt={`Image actuelle ${index + 1}`}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    {index === 0 && (
-                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
-                                                            Principale
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleCloseModal}
-                                >
-                                    Annuler
-                                </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? (
+                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                        <DialogTrigger asChild>
+                            <Button onClick={handleOpenModal} className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                Ajouter un produit
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    {isEditMode ? (
                                         <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                            {isEditMode
-                                                ? "Modification..."
-                                                : "Ajout..."}
+                                            <Edit className="h-5 w-5" />
+                                            Modifier le produit
                                         </>
                                     ) : (
                                         <>
-                                            {isEditMode ? (
-                                                <>
-                                                    <Edit className="h-4 w-4 mr-2" />
-                                                    Modifier
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Plus className="h-4 w-4 mr-2" />
-                                                    Ajouter
-                                                </>
-                                            )}
+                                            <Plus className="h-5 w-5" />
+                                            Ajouter un produit
                                         </>
                                     )}
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {isEditMode
+                                        ? "Modifiez les informations du produit ci-dessous."
+                                        : "Remplissez les informations du nouveau produit."}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            Nom du produit *
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="Nom du produit"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="brand">Marque</Label>
+                                        <Input
+                                            id="brand"
+                                            name="brand"
+                                            value={formData.brand}
+                                            onChange={handleChange}
+                                            placeholder="Marque du produit"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">
+                                        Description *
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Description du produit"
+                                        className="min-h-[100px]"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="price"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Euro className="h-4 w-4" />
+                                            Prix *
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="price"
+                                            name="price"
+                                            value={formData.price}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="0.00"
+                                            step="0.01"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="stock"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Boxes className="h-4 w-4" />
+                                            Stock *
+                                        </Label>
+                                        <Input
+                                            type="number"
+                                            id="stock"
+                                            name="stock"
+                                            value={formData.stock}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="0"
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="category_id"
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Tag className="h-4 w-4" />
+                                            Catégorie
+                                        </Label>
+                                        <Select
+                                            value={formData.category_id.toString()}
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    category_id: value,
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Sélectionner une catégorie" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {categories.map((category) => (
+                                                    <SelectItem
+                                                        key={category.id}
+                                                        value={category.id.toString()}
+                                                    >
+                                                        {category.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor="images"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Image className="h-4 w-4" />
+                                        Images
+                                    </Label>
+                                    <Input
+                                        type="file"
+                                        id="images"
+                                        name="images"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleChange}
+                                    />
+                                    <p className="text-xs text-gray-500">
+                                        Vous pouvez sélectionner plusieurs images. La première image sera l'image principale.
+                                    </p>
+
+                                    {/* Prévisualisation des images sélectionnées */}
+                                    {formData.images.length > 0 && (
+                                        <div className="mt-4 space-y-3">
+                                            <Label className="text-sm font-medium">
+                                                Images sélectionnées ({formData.images.length})
+                                            </Label>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {formData.images.map((image, index) => (
+                                                    <div key={index} className="relative group">
+                                                        <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden">
+                                                            {image instanceof File ? (
+                                                                <img
+                                                                    src={URL.createObjectURL(image)}
+                                                                    alt={`Image ${index + 1}`}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <img
+                                                                    src={`http://localhost:8000${image}`}
+                                                                    alt={`Image ${index + 1}`}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                        
+                                                        {/* Indicateur d'image principale */}
+                                                        {index === 0 && (
+                                                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                                Principale
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Bouton supprimer */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(index)}
+                                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            title="Supprimer cette image"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                        
+                                                        {/* Boutons de réorganisation */}
+                                                        {formData.images.length > 1 && (
+                                                            <div className="absolute bottom-1 left-1 right-1 flex gap-1">
+                                                                {index > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleImageReorder(index, index - 1)}
+                                                                        className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        title="Déplacer vers la gauche"
+                                                                    >
+                                                                        ←
+                                                                    </button>
+                                                                )}
+                                                                {index < formData.images.length - 1 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleImageReorder(index, index + 1)}
+                                                                        className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        title="Déplacer vers la droite"
+                                                                    >
+                                                                        →
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Affichage des images existantes en mode édition */}
+                                    {isEditMode && products.find(p => p.id === editingProductId)?.images && (
+                                        <div className="mt-4 p-3 border rounded-lg">
+                                            <p className="text-sm text-muted-foreground mb-2">
+                                                Images actuelles :
+                                            </p>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {products.find(p => p.id === editingProductId)?.images.map((image, index) => (
+                                                    <div key={index} className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
+                                                        <img
+                                                            src={`http://localhost:8000${image}`}
+                                                            alt={`Image actuelle ${index + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        {index === 0 && (
+                                                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                                Principale
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleCloseModal}
+                                    >
+                                        Annuler
+                                    </Button>
+                                    <Button type="submit" disabled={loading}>
+                                        {loading ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                {isEditMode
+                                                    ? "Modification..."
+                                                    : "Ajout..."}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {isEditMode ? (
+                                                    <>
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Modifier
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Ajouter
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
+            </div>
 
             {/* Products Table */}
             <Card>
@@ -795,7 +811,7 @@ export default function AdminProductsPage() {
                                         <div className="flex items-center gap-2">
                                             Marque
                                             {getSortIcon('brand')}
-                                </div>
+                                        </div>
                                     </TableHead>
                                     <TableHead 
                                         className="cursor-pointer hover:bg-gray-50"
@@ -804,7 +820,7 @@ export default function AdminProductsPage() {
                                         <div className="flex items-center gap-2">
                                             Prix
                                             {getSortIcon('price')}
-                                    </div>
+                                        </div>
                                     </TableHead>
                                     <TableHead 
                                         className="cursor-pointer hover:bg-gray-50"
@@ -880,38 +896,38 @@ export default function AdminProductsPage() {
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">
                                                         {product.stock}
-                                                </span>
+                                                    </span>
                                                     <Badge variant={stockStatus.variant}>
                                                         {stockStatus.text}
                                                     </Badge>
-                                            </div>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">
                                                 {product.category?.name || "-"}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-center gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleEditProduct(product)
-                                            }
-                                        >
-                                            <Edit className="h-3 w-3 mr-1" />
-                                            Modifier
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() =>
-                                                handleDeleteProduct(product.id)
-                                            }
-                                        >
-                                            <Trash2 className="h-3 w-3 mr-1" />
-                                            Supprimer
-                                        </Button>
-                                    </div>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleEditProduct(product)
+                                                        }
+                                                    >
+                                                        <Edit className="h-3 w-3 mr-1" />
+                                                        Modifier
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            handleDeleteProduct(product.id)
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-3 w-3 mr-1" />
+                                                        Supprimer
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -922,11 +938,11 @@ export default function AdminProductsPage() {
                         <div className="text-center py-12">
                             <Package className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 text-lg font-semibold text-foreground">
-                                    Aucun produit
-                                </h3>
+                                Aucun produit
+                            </h3>
                             <p className="mt-2 text-muted-foreground">
-                                    Commencez par ajouter votre premier produit
-                                </p>
+                                Commencez par ajouter votre premier produit
+                            </p>
                             <Button onClick={handleOpenModal} className="mt-4 gap-2">
                                 <Plus className="h-4 w-4" />
                                 Ajouter un produit
@@ -934,7 +950,7 @@ export default function AdminProductsPage() {
                         </div>
                     )}
                 </CardContent>
-                    </Card>
+            </Card>
         </div>
     );
 }
