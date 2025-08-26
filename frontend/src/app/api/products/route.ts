@@ -10,3 +10,8 @@ const dbConfig = {
 };
 
 const connection = await mysql.createConnection(dbConfig);
+
+ const [rows] = await connection.execute("SELECT * FROM products");
+    await connection.end();
+
+    const products: any[] = rows as any[];
