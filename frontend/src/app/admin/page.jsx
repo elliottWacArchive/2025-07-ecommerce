@@ -48,7 +48,7 @@ export default function Page() {
                         <div className="text-center">
                             <h3 className="font-semibold">Export Produits</h3>
                             <a
-                                href="/api/products/export"
+                                href="/api/products"
                                 className="text-muted-foreground hover:underline"
                             >
                                 Télécharger Excel
