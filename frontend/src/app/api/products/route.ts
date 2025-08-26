@@ -8,3 +8,5 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || "motdepasse",
   database: process.env.DB_DATABASE || "epicosmetique",
 };
+
+const connection = await mysql.createConnection(dbConfig);
