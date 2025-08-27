@@ -63,6 +63,8 @@ export default function AdminProductsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [subcategories, setSubcategories] = useState([]);
+    const [subSubcategories, setSubSubcategories] = useState([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingProductId, setEditingProductId] = useState(null);
     const [formData, setFormData] = useState({
@@ -72,13 +74,14 @@ export default function AdminProductsPage() {
         stock: "",
         brand: "",
         category_id: "",
+        subcategory_id: "",
+        sub_subcategory_id: "",
         images: [],
     });
 
-    // État pour le tri
     const [sortConfig, setSortConfig] = useState({
         key: null,
-        direction: 'asc'
+        direction: "asc",
     });
 
     const { user, token, isAdmin, loading: authLoading } = useAuth();
@@ -92,70 +95,119 @@ export default function AdminProductsPage() {
         }
     };
 
-    // Fonction de tri
     const sortProducts = (products, key, direction) => {
         return [...products].sort((a, b) => {
             let aValue = a[key];
             let bValue = b[key];
 
-            // Gestion des valeurs nulles/undefined
-            if (aValue === null || aValue === undefined) aValue = '';
-            if (bValue === null || bValue === undefined) bValue = '';
+            if (aValue === null || aValue === undefined) aValue = "";
+            if (bValue === null || bValue === undefined) bValue = "";
 
-            // Gestion des catégories (objet avec propriété name)
-            if (key === 'category' && aValue && bValue) {
-                aValue = aValue.name || '';
-                bValue = bValue.name || '';
+            // Gestion des catégories, sous-catégories et sous-sous-catégories (objets avec propriété name)
+            if (
+                (key === "category" ||
+                    key === "subcategory" ||
+                    key === "sub_subcategory") &&
+                aValue &&
+                bValue
+            ) {
+                aValue = aValue.name || "";
+                bValue = bValue.name || "";
             }
 
-            // Tri numérique pour prix et stock
-            if (key === 'price' || key === 'stock') {
+            if (key === "price" || key === "stock") {
                 aValue = parseFloat(aValue) || 0;
                 bValue = parseFloat(bValue) || 0;
             }
 
-            // Tri alphabétique pour les autres champs
-            if (typeof aValue === 'string') aValue = aValue.toLowerCase();
-            if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+            if (typeof aValue === "string") aValue = aValue.toLowerCase();
+            if (typeof bValue === "string") bValue = bValue.toLowerCase();
 
             if (aValue < bValue) {
-                return direction === 'asc' ? -1 : 1;
+                return direction === "asc" ? -1 : 1;
             }
             if (aValue > bValue) {
-                return direction === 'asc' ? 1 : -1;
+                return direction === "asc" ? 1 : -1;
             }
             return 0;
         });
     };
 
-    // Fonction pour gérer le clic sur l'en-tête de colonne
     const handleSort = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
+        let direction = "asc";
+        if (sortConfig.key === key && sortConfig.direction === "asc") {
+            direction = "desc";
         }
         setSortConfig({ key, direction });
     };
 
-    // Fonction pour obtenir l'icône de tri
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) {
             return <ChevronsUpDown className="h-4 w-4" />;
         }
-        return sortConfig.direction === 'asc' 
-            ? <ChevronUp className="h-4 w-4" /> 
-            : <ChevronDown className="h-4 w-4" />;
+        return sortConfig.direction === "asc" ? (
+            <ChevronUp className="h-4 w-4" />
+        ) : (
+            <ChevronDown className="h-4 w-4" />
+        );
     };
 
-    // Fonction pour télécharger l'export Excel
     const handleExportExcel = () => {
-        const link = document.createElement('a');
-        link.href = '/api/products';
+        const link = document.createElement("a");
+        link.href = "/api/products";
         link.click();
     };
 
-    // Produits triés
-    const sortedProducts = sortProducts(products, sortConfig.key, sortConfig.direction);
+    const sortedProducts = sortProducts(
+        products,
+        sortConfig.key,
+        sortConfig.direction
+    );
+
+    const fetchSubcategories = async (categoryId) => {
+        if (!categoryId) {
+            setSubcategories([]);
+            setSubSubcategories([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/subcategories/by-category?category_id=${categoryId}`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setSubcategories(data);
+            }
+        } catch (error) {
+            console.error(
+                "Erreur lors du chargement des sous-catégories:",
+                error
+            );
+        }
+    };
+
+    const fetchSubSubcategories = async (subcategoryId) => {
+        if (!subcategoryId) {
+            setSubSubcategories([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/subsubcategories/by-subcategory?subcategory_id=${subcategoryId}`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setSubSubcategories(data);
+            }
+        } catch (error) {
+            console.error(
+                "Erreur lors du chargement des sous-sous-catégories:",
+                error
+            );
+        }
+    };
 
     const fetchProducts = async () => {
         try {
@@ -211,8 +263,12 @@ export default function AdminProductsPage() {
             stock: "",
             brand: "",
             category_id: "",
+            subcategory_id: "",
+            sub_subcategory_id: "",
             images: [],
         });
+        setSubcategories([]);
+        setSubSubcategories([]);
         setIsModalOpen(true);
     };
 
@@ -226,8 +282,18 @@ export default function AdminProductsPage() {
             stock: product.stock,
             brand: product.brand || "",
             category_id: product.category_id || "",
-            images: product.images || [], // Assuming product.images is an array of URLs
+            subcategory_id: product.subcategory_id || "",
+            sub_subcategory_id: product.sub_subcategory_id || "",
+            images: product.images || [],
         });
+
+        if (product.category_id) {
+            fetchSubcategories(product.category_id);
+        }
+        if (product.subcategory_id) {
+            fetchSubSubcategories(product.subcategory_id);
+        }
+
         setIsModalOpen(true);
     };
 
@@ -280,11 +346,63 @@ export default function AdminProductsPage() {
                 images: [...formData.images, ...files],
             });
         } else {
+            const { name, value } = e.target;
             setFormData({
                 ...formData,
-                [e.target.name]: e.target.value,
+                [name]: value,
             });
+
+            if (name === "category_id") {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                    subcategory_id: "",
+                    sub_subcategory_id: "",
+                }));
+                fetchSubcategories(value);
+                setSubSubcategories([]);
+            } else if (name === "subcategory_id") {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                    sub_subcategory_id: "",
+                }));
+                fetchSubSubcategories(value);
+            }
         }
+    };
+
+    const handleCategoryChange = (value) => {
+        setFormData({
+            ...formData,
+            category_id: value,
+            subcategory_id: "",
+            sub_subcategory_id: "",
+        });
+        fetchSubcategories(value);
+        setSubSubcategories([]);
+    };
+
+    const handleSubcategoryChange = (value) => {
+        const subcategoryId = value === "0" ? "" : value;
+        setFormData({
+            ...formData,
+            subcategory_id: subcategoryId,
+            sub_subcategory_id: "",
+        });
+        if (subcategoryId) {
+            fetchSubSubcategories(subcategoryId);
+        } else {
+            setSubSubcategories([]);
+        }
+    };
+
+    const handleSubSubcategoryChange = (value) => {
+        const subSubcategoryId = value === "0" ? "" : value;
+        setFormData({
+            ...formData,
+            sub_subcategory_id: subSubcategoryId,
+        });
     };
 
     const handleRemoveImage = (index) => {
@@ -318,12 +436,11 @@ export default function AdminProductsPage() {
             const submitData = new FormData();
             Object.keys(formData).forEach((key) => {
                 if (formData[key] !== null && formData[key] !== "") {
-                    if (key === 'images' && formData[key].length > 0) {
-                        // Ajouter chaque image individuellement
+                    if (key === "images" && formData[key].length > 0) {
                         formData[key].forEach((image, index) => {
                             submitData.append(`images[${index}]`, image);
                         });
-                    } else if (key !== 'images') {
+                    } else if (key !== "images") {
                         submitData.append(key, formData[key]);
                     }
                 }
@@ -377,17 +494,17 @@ export default function AdminProductsPage() {
         if (stock === 0) {
             return {
                 text: "Stock épuisé",
-                variant: "destructive"
+                variant: "destructive",
             };
         } else if (stock <= 10) {
             return {
                 text: "Quantités limitées",
-                variant: "secondary"
+                variant: "secondary",
             };
         } else {
             return {
                 text: "En stock",
-                variant: "default"
+                variant: "default",
             };
         }
     };
@@ -403,7 +520,10 @@ export default function AdminProductsPage() {
                     <CardContent className="p-6">
                         <div className="space-y-4">
                             {[...Array(5)].map((_, i) => (
-                                <div key={i} className="flex items-center space-x-4">
+                                <div
+                                    key={i}
+                                    className="flex items-center space-x-4"
+                                >
                                     <Skeleton className="h-4 w-8" />
                                     <Skeleton className="h-4 w-32" />
                                     <Skeleton className="h-4 w-48" />
@@ -434,7 +554,6 @@ export default function AdminProductsPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 space-y-6">
-            {/* Header avec bouton Excel en haut */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
@@ -586,16 +705,11 @@ export default function AdminProductsPage() {
                                             className="flex items-center gap-2"
                                         >
                                             <Tag className="h-4 w-4" />
-                                            Catégorie
+                                            Catégorie *
                                         </Label>
                                         <Select
                                             value={formData.category_id.toString()}
-                                            onValueChange={(value) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    category_id: value,
-                                                })
-                                            }
+                                            onValueChange={handleCategoryChange}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Sélectionner une catégorie" />
@@ -614,6 +728,101 @@ export default function AdminProductsPage() {
                                     </div>
                                 </div>
 
+                                {formData.category_id && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label
+                                                htmlFor="subcategory_id"
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Tag className="h-4 w-4" />
+                                                Sous-catégorie
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    formData.subcategory_id
+                                                        ? formData.subcategory_id.toString()
+                                                        : "0"
+                                                }
+                                                onValueChange={
+                                                    handleSubcategoryChange
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Sélectionner une sous-catégorie" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0">
+                                                        Aucune sous-catégorie
+                                                    </SelectItem>
+                                                    {subcategories.map(
+                                                        (subcategory) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    subcategory.id
+                                                                }
+                                                                value={subcategory.id.toString()}
+                                                            >
+                                                                {
+                                                                    subcategory.name
+                                                                }
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {formData.subcategory_id && (
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="sub_subcategory_id"
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <Tag className="h-4 w-4" />
+                                                    Sous-sous-catégorie
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        formData.sub_subcategory_id
+                                                            ? formData.sub_subcategory_id.toString()
+                                                            : "0"
+                                                    }
+                                                    onValueChange={
+                                                        handleSubSubcategoryChange
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Sélectionner une sous-sous-catégorie" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0">
+                                                            Aucune
+                                                            sous-sous-catégorie
+                                                        </SelectItem>
+                                                        {subSubcategories.map(
+                                                            (
+                                                                subSubcategory
+                                                            ) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        subSubcategory.id
+                                                                    }
+                                                                    value={subSubcategory.id.toString()}
+                                                                >
+                                                                    {
+                                                                        subSubcategory.name
+                                                                    }
+                                                                </SelectItem>
+                                                            )
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="space-y-2">
                                     <Label
                                         htmlFor="images"
@@ -631,106 +840,158 @@ export default function AdminProductsPage() {
                                         onChange={handleChange}
                                     />
                                     <p className="text-xs text-gray-500">
-                                        Vous pouvez sélectionner plusieurs images. La première image sera l'image principale.
+                                        Vous pouvez sélectionner plusieurs
+                                        images. La première image sera l'image
+                                        principale.
                                     </p>
 
-                                    {/* Prévisualisation des images sélectionnées */}
                                     {formData.images.length > 0 && (
                                         <div className="mt-4 space-y-3">
                                             <Label className="text-sm font-medium">
-                                                Images sélectionnées ({formData.images.length})
+                                                Images sélectionnées (
+                                                {formData.images.length})
                                             </Label>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                {formData.images.map((image, index) => (
-                                                    <div key={index} className="relative group">
-                                                        <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden">
-                                                            {image instanceof File ? (
-                                                                <img
-                                                                    src={URL.createObjectURL(image)}
-                                                                    alt={`Image ${index + 1}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <img
-                                                                    src={`http://localhost:8000${image}`}
-                                                                    alt={`Image ${index + 1}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
+                                                {formData.images.map(
+                                                    (image, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="relative group"
+                                                        >
+                                                            <div className="w-24 h-24 bg-gray-50 rounded-md border overflow-hidden">
+                                                                {image instanceof
+                                                                File ? (
+                                                                    <img
+                                                                        src={URL.createObjectURL(
+                                                                            image
+                                                                        )}
+                                                                        alt={`Image ${
+                                                                            index +
+                                                                            1
+                                                                        }`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <img
+                                                                        src={`http://localhost:8000${image}`}
+                                                                        alt={`Image ${
+                                                                            index +
+                                                                            1
+                                                                        }`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                )}
+                                                            </div>
+
+                                                            {index === 0 && (
+                                                                <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                                    Principale
+                                                                </div>
+                                                            )}
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleRemoveImage(
+                                                                        index
+                                                                    )
+                                                                }
+                                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                title="Supprimer cette image"
+                                                            >
+                                                                ×
+                                                            </button>
+
+                                                            {formData.images
+                                                                .length > 1 && (
+                                                                <div className="absolute bottom-1 left-1 right-1 flex gap-1">
+                                                                    {index >
+                                                                        0 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                handleImageReorder(
+                                                                                    index,
+                                                                                    index -
+                                                                                        1
+                                                                                )
+                                                                            }
+                                                                            className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                            title="Déplacer vers la gauche"
+                                                                        >
+                                                                            ←
+                                                                        </button>
+                                                                    )}
+                                                                    {index <
+                                                                        formData
+                                                                            .images
+                                                                            .length -
+                                                                            1 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                handleImageReorder(
+                                                                                    index,
+                                                                                    index +
+                                                                                        1
+                                                                                )
+                                                                            }
+                                                                            className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                            title="Déplacer vers la droite"
+                                                                        >
+                                                                            →
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        
-                                                        {/* Indicateur d'image principale */}
-                                                        {index === 0 && (
-                                                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
-                                                                Principale
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {/* Bouton supprimer */}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveImage(index)}
-                                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            title="Supprimer cette image"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                        
-                                                        {/* Boutons de réorganisation */}
-                                                        {formData.images.length > 1 && (
-                                                            <div className="absolute bottom-1 left-1 right-1 flex gap-1">
-                                                                {index > 0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleImageReorder(index, index - 1)}
-                                                                        className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                        title="Déplacer vers la gauche"
-                                                                    >
-                                                                        ←
-                                                                    </button>
-                                                                )}
-                                                                {index < formData.images.length - 1 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleImageReorder(index, index + 1)}
-                                                                        className="bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                        title="Déplacer vers la droite"
-                                                                    >
-                                                                        →
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                    )
+                                                )}
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Affichage des images existantes en mode édition */}
-                                    {isEditMode && products.find(p => p.id === editingProductId)?.images && (
-                                        <div className="mt-4 p-3 border rounded-lg">
-                                            <p className="text-sm text-muted-foreground mb-2">
-                                                Images actuelles :
-                                            </p>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                {products.find(p => p.id === editingProductId)?.images.map((image, index) => (
-                                                    <div key={index} className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden">
-                                                        <img
-                                                            src={`http://localhost:8000${image}`}
-                                                            alt={`Image actuelle ${index + 1}`}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                        {index === 0 && (
-                                                            <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
-                                                                Principale
-                                                            </div>
+                                    {isEditMode &&
+                                        products.find(
+                                            (p) => p.id === editingProductId
+                                        )?.images && (
+                                            <div className="mt-4 p-3 border rounded-lg">
+                                                <p className="text-sm text-muted-foreground mb-2">
+                                                    Images actuelles :
+                                                </p>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {products
+                                                        .find(
+                                                            (p) =>
+                                                                p.id ===
+                                                                editingProductId
+                                                        )
+                                                        ?.images.map(
+                                                            (image, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden"
+                                                                >
+                                                                    <img
+                                                                        src={`http://localhost:8000${image}`}
+                                                                        alt={`Image actuelle ${
+                                                                            index +
+                                                                            1
+                                                                        }`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                    {index ===
+                                                                        0 && (
+                                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                                            Principale
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )
                                                         )}
-                                                    </div>
-                                                ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
                                 </div>
 
                                 <div className="flex justify-end gap-3 pt-4">
@@ -772,12 +1033,12 @@ export default function AdminProductsPage() {
                 </div>
             </div>
 
-            {/* Products Table */}
             <Card>
                 <CardHeader>
                     <CardTitle>Liste des Produits</CardTitle>
                     <CardDescription>
-                        Visualisez et gérez tous vos produits. Cliquez sur les en-têtes de colonnes pour trier.
+                        Visualisez et gérez tous vos produits. Cliquez sur les
+                        en-têtes de colonnes pour trier.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -785,57 +1046,81 @@ export default function AdminProductsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead 
+                                    <TableHead
                                         className="w-16 cursor-pointer hover:bg-gray-50"
-                                        onClick={() => handleSort('id')}
+                                        onClick={() => handleSort("id")}
                                     >
                                         <div className="flex items-center gap-2">
                                             ID
-                                            {getSortIcon('id')}
+                                            {getSortIcon("id")}
                                         </div>
                                     </TableHead>
                                     <TableHead>Image</TableHead>
-                                    <TableHead 
+                                    <TableHead
                                         className="cursor-pointer hover:bg-gray-50"
-                                        onClick={() => handleSort('name')}
+                                        onClick={() => handleSort("name")}
                                     >
                                         <div className="flex items-center gap-2">
                                             Nom
-                                            {getSortIcon('name')}
+                                            {getSortIcon("name")}
                                         </div>
                                     </TableHead>
-                                    <TableHead 
+                                    <TableHead
                                         className="cursor-pointer hover:bg-gray-50"
-                                        onClick={() => handleSort('brand')}
+                                        onClick={() => handleSort("brand")}
                                     >
                                         <div className="flex items-center gap-2">
                                             Marque
-                                            {getSortIcon('brand')}
+                                            {getSortIcon("brand")}
                                         </div>
                                     </TableHead>
-                                    <TableHead 
+                                    <TableHead
                                         className="cursor-pointer hover:bg-gray-50"
-                                        onClick={() => handleSort('price')}
+                                        onClick={() => handleSort("price")}
                                     >
                                         <div className="flex items-center gap-2">
                                             Prix
-                                            {getSortIcon('price')}
+                                            {getSortIcon("price")}
                                         </div>
                                     </TableHead>
-                                    <TableHead 
+                                    <TableHead
                                         className="cursor-pointer hover:bg-gray-50"
-                                        onClick={() => handleSort('stock')}
+                                        onClick={() => handleSort("stock")}
                                     >
                                         <div className="flex items-center gap-2">
                                             Stock
-                                            {getSortIcon('stock')}
+                                            {getSortIcon("stock")}
                                         </div>
                                     </TableHead>
-                                    <TableHead 
+                                    <TableHead
                                         className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() => handleSort("category")}
                                     >
                                         <div className="flex items-center gap-2">
                                             Catégorie
+                                            {getSortIcon("category")}
+                                        </div>
+                                    </TableHead>
+                                    <TableHead
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() =>
+                                            handleSort("subcategory")
+                                        }
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Sous-catégorie
+                                            {getSortIcon("subcategory")}
+                                        </div>
+                                    </TableHead>
+                                    <TableHead
+                                        className="cursor-pointer hover:bg-gray-50"
+                                        onClick={() =>
+                                            handleSort("sub_subcategory")
+                                        }
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Sous-sous-catégorie
+                                            {getSortIcon("sub_subcategory")}
                                         </div>
                                     </TableHead>
                                     <TableHead className="text-center w-32">
@@ -845,7 +1130,9 @@ export default function AdminProductsPage() {
                             </TableHeader>
                             <TableBody>
                                 {sortedProducts.map((product) => {
-                                    const stockStatus = getStockStatus(product.stock);
+                                    const stockStatus = getStockStatus(
+                                        product.stock
+                                    );
                                     return (
                                         <TableRow
                                             key={product.id}
@@ -855,25 +1142,47 @@ export default function AdminProductsPage() {
                                                 {product.id}
                                             </TableCell>
                                             <TableCell>
-                                                {product.images && product.images.length > 0 ? (
+                                                {product.images &&
+                                                product.images.length > 0 ? (
                                                     <div className="flex gap-1">
-                                                        {product.images.slice(0, 3).map((image, index) => (
-                                                            <div key={index} className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden">
-                                                                <img
-                                                                    src={`http://localhost:8000${image}`}
-                                                                    alt={`${product.name} ${index + 1}`}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                                {index === 0 && (
-                                                                    <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-br">
-                                                                        P
+                                                        {product.images
+                                                            .slice(0, 3)
+                                                            .map(
+                                                                (
+                                                                    image,
+                                                                    index
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden"
+                                                                    >
+                                                                        <img
+                                                                            src={`http://localhost:8000${image}`}
+                                                                            alt={`${
+                                                                                product.name
+                                                                            } ${
+                                                                                index +
+                                                                                1
+                                                                            }`}
+                                                                            className="w-full h-full object-cover"
+                                                                        />
+                                                                        {index ===
+                                                                            0 && (
+                                                                            <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-br">
+                                                                                P
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        {product.images.length > 3 && (
+                                                                )
+                                                            )}
+                                                        {product.images.length >
+                                                            3 && (
                                                             <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center text-xs text-gray-500">
-                                                                +{product.images.length - 3}
+                                                                +
+                                                                {product.images
+                                                                    .length - 3}
                                                             </div>
                                                         )}
                                                     </div>
@@ -897,7 +1206,11 @@ export default function AdminProductsPage() {
                                                     <span className="font-medium">
                                                         {product.stock}
                                                     </span>
-                                                    <Badge variant={stockStatus.variant}>
+                                                    <Badge
+                                                        variant={
+                                                            stockStatus.variant
+                                                        }
+                                                    >
                                                         {stockStatus.text}
                                                     </Badge>
                                                 </div>
@@ -905,13 +1218,23 @@ export default function AdminProductsPage() {
                                             <TableCell className="text-muted-foreground">
                                                 {product.category?.name || "-"}
                                             </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.subcategory?.name ||
+                                                    "-"}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {product.sub_subcategory
+                                                    ?.name || "-"}
+                                            </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-center gap-2">
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         onClick={() =>
-                                                            handleEditProduct(product)
+                                                            handleEditProduct(
+                                                                product
+                                                            )
                                                         }
                                                     >
                                                         <Edit className="h-3 w-3 mr-1" />
@@ -921,7 +1244,9 @@ export default function AdminProductsPage() {
                                                         size="sm"
                                                         variant="destructive"
                                                         onClick={() =>
-                                                            handleDeleteProduct(product.id)
+                                                            handleDeleteProduct(
+                                                                product.id
+                                                            )
                                                         }
                                                     >
                                                         <Trash2 className="h-3 w-3 mr-1" />
@@ -943,7 +1268,10 @@ export default function AdminProductsPage() {
                             <p className="mt-2 text-muted-foreground">
                                 Commencez par ajouter votre premier produit
                             </p>
-                            <Button onClick={handleOpenModal} className="mt-4 gap-2">
+                            <Button
+                                onClick={handleOpenModal}
+                                className="mt-4 gap-2"
+                            >
                                 <Plus className="h-4 w-4" />
                                 Ajouter un produit
                             </Button>
