@@ -12,7 +12,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::withCount('products')->get();
+        $categories = Category::withCount(['products', 'subcategories'])->get();
         return response()->json($categories);
     }
 
