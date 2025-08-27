@@ -9,7 +9,7 @@ class ProductController extends Controller
 {
         public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with(['category', 'subcategory', 'subSubcategory']);
 
         if ($request->has('category')) {
             $query->where('category_id', $request->category);
@@ -58,6 +58,8 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
+            'subcategory_id' => 'nullable|integer|exists:subcategories,id',
+            'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -98,6 +100,8 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'brand' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
+            'subcategory_id' => 'nullable|integer|exists:subcategories,id',
+            'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -131,7 +135,7 @@ class ProductController extends Controller
             }
             
             $product->update($validated);
-            $product->load('category');
+            $product->load(['category', 'subcategory', 'subSubcategory']);
             return response()->json($product);
         } catch (\Exception $e) {
             return response()->json([
