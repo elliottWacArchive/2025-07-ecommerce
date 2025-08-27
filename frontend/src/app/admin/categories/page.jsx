@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminHeader } from "@/components/admin-header";
+import { SubcategoryManager } from "@/components/subcategory-manager";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -50,6 +51,7 @@ export default function AdminCategoriesPage() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const [expandedCategories, setExpandedCategories] = useState(new Set());
 
     useEffect(() => {
         if (authLoading) return;
@@ -229,6 +231,16 @@ export default function AdminCategoriesPage() {
         }
     };
 
+    const toggleCategory = (categoryId) => {
+        const newExpanded = new Set(expandedCategories);
+        if (newExpanded.has(categoryId)) {
+            newExpanded.delete(categoryId);
+        } else {
+            newExpanded.add(categoryId);
+        }
+        setExpandedCategories(newExpanded);
+    };
+
     if (authLoading || loading) {
         return (
             <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -385,58 +397,86 @@ export default function AdminCategoriesPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {categories.map((category) => (
-                                            <TableRow key={category.id}>
-                                                <TableCell className="font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <Tag className="h-4 w-4 text-muted-foreground" />
-                                                        {category.name}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="secondary">
-                                                        {category.products_count ||
-                                                            0}{" "}
-                                                        produit(s)
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {new Date(
-                                                        category.created_at
-                                                    ).toLocaleDateString(
-                                                        "fr-FR"
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                handleEditCategory(
-                                                                    category
-                                                                )
-                                                            }
-                                                            className="gap-1"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                            Modifier
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() =>
-                                                                handleDeleteCategory(
+                                            <React.Fragment key={category.id}>
+                                                <TableRow>
+                                                    <TableCell className="font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            <Tag className="h-4 w-4 text-muted-foreground" />
+                                                            {category.name}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Badge variant="secondary">
+                                                                {category.products_count ||
+                                                                    0}{" "}
+                                                                produit(s)
+                                                            </Badge>
+                                                            <Badge variant="outline">
+                                                                {category.subcategories_count ||
+                                                                    0}{" "}
+                                                                sous-catégorie(s)
+                                                            </Badge>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {new Date(
+                                                            category.created_at
+                                                        ).toLocaleDateString(
+                                                            "fr-FR"
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    handleEditCategory(
+                                                                        category
+                                                                    )
+                                                                }
+                                                                className="gap-1"
+                                                            >
+                                                                <Edit className="h-3 w-3" />
+                                                                Modifier
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                onClick={() =>
+                                                                    handleDeleteCategory(
+                                                                        category.id
+                                                                    )
+                                                                }
+                                                                className="gap-1"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                                Supprimer
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell
+                                                        colSpan={4}
+                                                        className="p-0"
+                                                    >
+                                                        <SubcategoryManager
+                                                            category={category}
+                                                            token={token}
+                                                            isOpen={expandedCategories.has(
+                                                                category.id
+                                                            )}
+                                                            onToggle={() =>
+                                                                toggleCategory(
                                                                     category.id
                                                                 )
                                                             }
-                                                            className="gap-1"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                            Supprimer
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            </React.Fragment>
                                         ))}
                                     </TableBody>
                                 </Table>
