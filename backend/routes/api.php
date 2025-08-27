@@ -60,6 +60,18 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::put('/admin/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy']);
     
+    // Subcategories admin routes
+    Route::get('/admin/subcategories', [SubcategoryController::class, 'index']);
+    Route::post('/admin/subcategories', [SubcategoryController::class, 'store']);
+    Route::put('/admin/subcategories/{id}', [SubcategoryController::class, 'update']);
+    Route::delete('/admin/subcategories/{id}', [SubcategoryController::class, 'destroy']);
+    
+    // Subsubcategories admin routes
+    Route::get('/admin/subsubcategories', [SubSubcategoryController::class, 'index']);
+    Route::post('/admin/subsubcategories', [SubSubcategoryController::class, 'store']);
+    Route::put('/admin/subsubcategories/{id}', [SubSubcategoryController::class, 'update']);
+    Route::delete('/admin/subsubcategories/{id}', [SubSubcategoryController::class, 'destroy']);
+    
     // User management routes
     Route::get('/admin/users', [AuthController::class, 'getAllUsers']);
     Route::put('/admin/users/{id}/role', [AuthController::class, 'updateUserRole']);
