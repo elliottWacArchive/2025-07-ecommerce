@@ -76,6 +76,20 @@ export default function Home() {
     }
   };
 
+  const renderPrice = (item) => {
+    if (item.is_on_promo) {
+      return (
+        <span style={{ color: "#16a34a", fontWeight: 700 }}>
+          <span style={{ textDecoration: "line-through", color: "#9ca3af", fontWeight: 500, marginRight: 6 }}>
+            {item.price}€
+          </span>
+          {item.current_price}€
+        </span>
+      );
+    }
+    return <span style={styles.popularPrice}>{item.price}€</span>;
+  };
+
   return (
     <div style={styles.page}>
       {showAlert && <div style={styles.alert}>Article ajouté au panier ✅</div>}
@@ -101,7 +115,7 @@ export default function Home() {
                   />
                 </div>
                 <p style={styles.popularDesc}>{item.name}</p>
-                <span style={styles.popularPrice}>{item.price}€</span>
+                {renderPrice(item)}
                 <div style={styles.viewsCount}>
                   vu par {item.views} personnes
                 </div>
@@ -135,7 +149,7 @@ export default function Home() {
                   />
                 </div>
                 <p style={styles.popularDesc}>{item.name}</p>
-                <span style={styles.popularPrice}>{item.price}€</span>
+                {renderPrice(item)}
               </Link>
               <button
                 style={styles.popularAddButton}
