@@ -1,7 +1,9 @@
 import StockStatus from "./StockStatus";
 
 export default function ProductInfo({ product, selectedCapacity, onCapacityChange, calculatePrice }) {
-    const currentPrice = calculatePrice(product.price, selectedCapacity);
+    const basePriceForCapacity = calculatePrice(product.price, selectedCapacity);
+    const promoBase = product.is_on_promo ? product.current_price : product.price;
+    const promoPriceForCapacity = calculatePrice(promoBase, selectedCapacity);
 
     return (
         <div className="space-y-6">
@@ -16,7 +18,17 @@ export default function ProductInfo({ product, selectedCapacity, onCapacityChang
                 <div className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">
                     Prix
                 </div>
-                <div className="text-4xl font-bold text-gray-900">€{currentPrice}</div>
+                {product.is_on_promo ? (
+                    <div className="flex items-baseline gap-3">
+                        <div className="text-4xl font-bold text-green-700">€{promoPriceForCapacity}</div>
+                        <div className="text-2xl text-gray-400 line-through">€{basePriceForCapacity}</div>
+                        {product.discount_percentage && (
+                            <span className="text-sm font-semibold text-red-600">-{product.discount_percentage}%</span>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-4xl font-bold text-gray-900">€{basePriceForCapacity}</div>
+                )}
                 {selectedCapacity !== "50ml" && (
                     <p className="text-sm text-gray-500">
                         Prix de base: €{product.price} (50ml)
@@ -38,9 +50,9 @@ export default function ProductInfo({ product, selectedCapacity, onCapacityChang
                     value={selectedCapacity}
                     onChange={(e) => onCapacityChange(e.target.value)}
                 >
-                    <option value="30ml">30ml - €{calculatePrice(product.price, "30ml")}</option>
-                    <option value="50ml">50ml - €{calculatePrice(product.price, "50ml")}</option>
-                    <option value="100ml">100ml - €{calculatePrice(product.price, "100ml")}</option>
+                    <option value="30ml">30ml - €{calculatePrice(product.is_on_promo ? product.current_price : product.price, "30ml")}</option>
+                    <option value="50ml">50ml - €{calculatePrice(product.is_on_promo ? product.current_price : product.price, "50ml")}</option>
+                    <option value="100ml">100ml - €{calculatePrice(product.is_on_promo ? product.current_price : product.price, "100ml")}</option>
                 </select>
                 <p className="text-xs text-gray-500">
                     Sélectionnez la contenance pour voir le prix correspondant
