@@ -77,6 +77,9 @@ export default function AdminProductsPage() {
         subcategory_id: "",
         sub_subcategory_id: "",
         images: [],
+        discount_percentage: "",
+        promo_starts_at: "",
+        promo_ends_at: "",
     });
 
     const [sortConfig, setSortConfig] = useState({
@@ -266,6 +269,9 @@ export default function AdminProductsPage() {
             subcategory_id: "",
             sub_subcategory_id: "",
             images: [],
+            discount_percentage: "",
+            promo_starts_at: "",
+            promo_ends_at: "",
         });
         setSubcategories([]);
         setSubSubcategories([]);
@@ -285,6 +291,9 @@ export default function AdminProductsPage() {
             subcategory_id: product.subcategory_id || "",
             sub_subcategory_id: product.sub_subcategory_id || "",
             images: product.images || [],
+            discount_percentage: product.discount_percentage || "",
+            promo_starts_at: product.promo_starts_at ? product.promo_starts_at.substring(0, 16) : "",
+            promo_ends_at: product.promo_ends_at ? product.promo_ends_at.substring(0, 16) : "",
         });
 
         if (product.category_id) {
@@ -725,6 +734,42 @@ export default function AdminProductsPage() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="discount_percentage">Remise (%)</Label>
+                                        <Input
+                                            type="number"
+                                            id="discount_percentage"
+                                            name="discount_percentage"
+                                            value={formData.discount_percentage}
+                                            onChange={handleChange}
+                                            placeholder="Ex: 20"
+                                            min="1"
+                                            max="90"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="promo_starts_at">Début promo</Label>
+                                        <Input
+                                            type="datetime-local"
+                                            id="promo_starts_at"
+                                            name="promo_starts_at"
+                                            value={formData.promo_starts_at}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="promo_ends_at">Fin promo</Label>
+                                        <Input
+                                            type="datetime-local"
+                                            id="promo_ends_at"
+                                            name="promo_ends_at"
+                                            value={formData.promo_ends_at}
+                                            onChange={handleChange}
+                                        />
                                     </div>
                                 </div>
 
@@ -1199,7 +1244,23 @@ export default function AdminProductsPage() {
                                                 {product.brand || "-"}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {product.price}€
+                                                {product.is_on_promo ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="line-through text-gray-400">
+                                                            {product.price}€
+                                                        </span>
+                                                        <span className="text-green-600 font-bold">
+                                                            {product.current_price}€
+                                                        </span>
+                                                        {product.discount_percentage && (
+                                                            <Badge variant="destructive">
+                                                                -{product.discount_percentage}%
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    `${product.price}€`
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
