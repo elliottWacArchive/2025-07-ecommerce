@@ -23,7 +23,10 @@ class ProductController extends Controller
             $query->where('sub_subcategory_id', $request->subsubcategory);
         }
 
-        return response()->json($query->get());
+        $products = $query->get();
+        // Expose computed attributes
+        $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
+        return response()->json($products);
     }
 
     public function show(string $id)
@@ -35,6 +38,7 @@ class ProductController extends Controller
         }
 
         $product->increment('views');
+        $product->append(['is_on_promo', 'current_price']);
 
         return response()->json($product, 200);
     }
@@ -46,6 +50,7 @@ class ProductController extends Controller
             ->take(10)
             ->get();
         
+        $popularProducts->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($popularProducts);
     }
 
@@ -61,6 +66,9 @@ class ProductController extends Controller
             'subcategory_id' => 'nullable|integer|exists:subcategories,id',
             'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'discount_percentage' => 'nullable|integer|min:1|max:90',
+            'promo_starts_at' => 'nullable|date',
+            'promo_ends_at' => 'nullable|date|after_or_equal:promo_starts_at',
         ]);
 
         try {
@@ -82,6 +90,7 @@ class ProductController extends Controller
             }
 
             $product = Product::create($validated);
+            $product->append(['is_on_promo', 'current_price']);
             return response()->json($product, 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -103,6 +112,9 @@ class ProductController extends Controller
             'subcategory_id' => 'nullable|integer|exists:subcategories,id',
             'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'discount_percentage' => 'nullable|integer|min:1|max:90',
+            'promo_starts_at' => 'nullable|date',
+            'promo_ends_at' => 'nullable|date|after_or_equal:promo_starts_at',
         ]);
 
         try {
@@ -136,6 +148,7 @@ class ProductController extends Controller
             
             $product->update($validated);
             $product->load(['category', 'subcategory', 'subSubcategory']);
+            $product->append(['is_on_promo', 'current_price']);
             return response()->json($product);
         } catch (\Exception $e) {
             return response()->json([
@@ -182,6 +195,7 @@ class ProductController extends Controller
             return response()->json(['message' => 'Produit introuvable'], 404);
         }
 
+        $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($products);
     }
 
@@ -195,53 +209,44 @@ class ProductController extends Controller
 
         $products = Product::where('name', 'like', '%' . $name . '%')->get();
 
+        $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($products); 
     }
     
-        public function bySubcategory(Request $request)
+    public function bySubcategory(Request $request)
     {
         $subcategoryId = $request->query('subcategory_id');
 
-        if (!$subcategoryId) {
-            return response()->json(['message' => 'ID de sous-catégorie manquant'], 400);
-        }
-
-        $products = Product::where('subcategory_id', $subcategoryId)->with('category')->get();
-
-        if ($products->isEmpty()) {
-            return response()->json(['message' => 'Aucun produit trouvé pour cette sous-catégorie'], 404);
-        }
-
+        $products = Product::where('subcategory_id', $subcategoryId)->get();
+        $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($products);
     }
 
-        public function bySubSubcategory(Request $request)
+    public function bySubSubcategory(Request $request)
     {
-        $subSubcategoryId = $request->query('sub_subcategory_id');
+        $subSubcategoryId = $request->query('subsubcategory_id');
 
-        if (!$subSubcategoryId) {
-            return response()->json(['message' => 'ID de sous-sous-catégorie manquant'], 400);
-        }
-
-        $products = Product::where('sub_subcategory_id', $subSubcategoryId)->with('category')->get();
-
-        if ($products->isEmpty()) {
-            return response()->json(['message' => 'Aucun produit trouvé pour cette sous-sous-catégorie'], 404);
-        }
-
+        $products = Product::where('sub_subcategory_id', $subSubcategoryId)->get();
+        $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($products);
     }
 
-    public function related($id)
-{
-    $product = Product::findOrFail($id);
-
-    $related = Product::where('subcategory_id', $product->subcategory_id)
-                ->where('id', '!=', $product->id)
-                ->limit(10)
-                ->get();
-
-    return response()->json($related);
-}
-
+    public function related(string $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json([], 200);
+        }
+        $query = Product::query();
+        if ($product->sub_subcategory_id) {
+            $query->where('sub_subcategory_id', $product->sub_subcategory_id);
+        } elseif ($product->subcategory_id) {
+            $query->where('subcategory_id', $product->subcategory_id);
+        } elseif ($product->category_id) {
+            $query->where('category_id', $product->category_id);
+        }
+        $related = $query->where('id', '!=', $product->id)->take(10)->get();
+        $related->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
+        return response()->json($related);
+    }
 }
