@@ -41,8 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/sync', [CartController::class, 'sync']);
     
     // Order routes for authenticated users
-    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/user/orders', [OrderController::class, 'getUserOrders']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders', [OrderController::class, 'store']);
 });
 
 // Admin routes
@@ -109,5 +110,3 @@ Route::post('/shipping/calculate', [ShippingCostController::class, 'calculate'])
 Route::get('/shipping/options', [ShippingCostController::class, 'getOptions']);
 Route::get('/shipping/countries', [ShippingCostController::class, 'getCountries']);
 Route::get('/shipping/delivery-methods', [ShippingCostController::class, 'getDeliveryMethods']);
-
-Route::post('/orders', [OrderController::class, 'store']);

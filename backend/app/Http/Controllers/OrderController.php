@@ -109,6 +109,30 @@ class OrderController extends Controller
         ]);
     }
 
+    public function getUserOrders(Request $request)
+    {
+        \Log::info('getUserOrders called');
+        $user = $request->user();
+        \Log::info('User from request:', ['user_id' => $user ? $user->id : null]);
+        
+        if (!$user) {
+            \Log::warning('No user authenticated for getUserOrders');
+            return response()->json([
+                'message' => 'Non autorisé'
+            ], 401);
+        }
+
+        $orders = Order::where('user_id', $user->id)
+                      ->orderBy('created_at', 'desc')
+                      ->get();
+        
+        \Log::info('Orders found for user:', ['user_id' => $user->id, 'count' => $orders->count()]);
+
+        return response()->json([
+            'orders' => $orders
+        ]);
+    }
+
     public function show(Request $request, $id)
     {
         $user = $request->user();
