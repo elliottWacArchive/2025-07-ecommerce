@@ -73,18 +73,15 @@ export default function Header() {
                         >
                             Maquillage
                         </Link>
-                        <Link
-                            href="/a-propos"
-                            className="text-gray-700 hover:text-gray-900 font-medium"
-                        >
-                            À propos
-                        </Link>
-                        <Link
-                            href="/favoris"
-                            className="text-gray-700 hover:text-gray-900 font-medium"
-                        >
-                            Favoris
-                        </Link>
+
+                        {user && (
+                            <Link
+                                href="/orders"
+                                className="text-gray-700 hover:text-gray-900 font-medium"
+                            >
+                                Mes commandes
+                            </Link>
+                        )}
                     </nav>
 
                     {/* Boutons d'action */}
@@ -110,26 +107,26 @@ export default function Header() {
                                 </button>
                             </Link>
                         )}
-                        
+
                         {/* Bouton panier avec popup */}
                         <div className="relative">
-                        <Link href="/cart">
-                                <button 
+                            <Link href="/cart">
+                                <button
                                     className="relative px-4 py-2 bg-[#FC87D2] text-white rounded-lg cursor-pointer hover:bg-[#e078ba] font-medium"
                                     onMouseEnter={handleCartMouseEnter}
                                     onMouseLeave={handleCartMouseLeave}
                                 >
-                                Panier
-                                {getCartItemsCount() > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                        {getCartItemsCount()}
-                                    </span>
-                                )}
-                            </button>
-                        </Link>
-                            
+                                    Panier
+                                    {getCartItemsCount() > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                            {getCartItemsCount()}
+                                        </span>
+                                    )}
+                                </button>
+                            </Link>
+
                             {/* Popup du panier */}
-                            <CartPopup 
+                            <CartPopup
                                 isVisible={isCartPopupVisible}
                                 onMouseEnter={handleCartMouseEnter}
                                 onMouseLeave={handleCartMouseLeave}
