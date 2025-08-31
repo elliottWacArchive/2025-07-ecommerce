@@ -41,6 +41,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import ExcelJS from "exceljs";
 import {
     Plus,
     Edit,
@@ -156,10 +157,120 @@ export default function AdminProductsPage() {
         );
     };
 
-    const handleExportExcel = () => {
-        const link = document.createElement("a");
-        link.href = "/api/products";
-        link.click();
+    const handleExportExcel = async () => {
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Produits");
+
+            worksheet.columns = [
+                { header: "ID", key: "id", width: 10 },
+                { header: "Nom", key: "name", width: 30 },
+                { header: "Description", key: "description", width: 50 },
+                { header: "Prix (€)", key: "price", width: 15 },
+                { header: "Stock", key: "stock", width: 10 },
+                { header: "Marque", key: "brand", width: 20 },
+                { header: "Catégorie", key: "category", width: 20 },
+                { header: "Sous-catégorie", key: "subcategory", width: 25 },
+                {
+                    header: "Sous-sous-catégorie",
+                    key: "subsubcategory",
+                    width: 25,
+                },
+                {
+                    header: "Réduction (%)",
+                    key: "discount_percentage",
+                    width: 15,
+                },
+                { header: "Début promo", key: "promo_starts_at", width: 20 },
+                { header: "Fin promo", key: "promo_ends_at", width: 20 },
+                { header: "Vues", key: "views", width: 10 },
+                { header: "Créé le", key: "created_at", width: 20 },
+            ];
+
+            products.forEach((product) => {
+                worksheet.addRow({
+                    id: product.id,
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    stock: product.stock,
+                    brand: product.brand,
+                    category: product.category?.name || "",
+                    subcategory: product.subcategory?.name || "",
+                    subsubcategory: product.sub_subcategory?.name || "",
+                    discount_percentage: product.discount_percentage || "",
+                    promo_starts_at: product.promo_starts_at
+                        ? new Date(product.promo_starts_at).toLocaleDateString(
+                              "fr-FR"
+                          )
+                        : "",
+                    promo_ends_at: product.promo_ends_at
+                        ? new Date(product.promo_ends_at).toLocaleDateString(
+                              "fr-FR"
+                          )
+                        : "",
+                    views: product.views || 0,
+                    created_at: new Date(product.created_at).toLocaleDateString(
+                        "fr-FR"
+                    ),
+                });
+            });
+
+            const headerRow = worksheet.getRow(1);
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true, color: { argb: "FFFFFF" } };
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "366092" },
+                };
+                cell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+            });
+
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber > 1) {
+                    row.eachCell((cell) => {
+                        cell.border = {
+                            top: { style: "thin" },
+                            left: { style: "thin" },
+                            bottom: { style: "thin" },
+                            right: { style: "thin" },
+                        };
+                    });
+                }
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+
+            const now = new Date();
+            const dateStr = now.toISOString().split("T")[0];
+            link.download = `produits_${dateStr}.xlsx`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success(
+                `Export réussi ! ${products.length} produits exportés.`
+            );
+        } catch (error) {
+            console.error("Erreur lors de l'export:", error);
+            toast.error("Erreur lors de l'export des produits");
+        }
     };
 
     const sortedProducts = sortProducts(
