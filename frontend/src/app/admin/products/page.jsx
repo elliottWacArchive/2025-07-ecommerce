@@ -82,6 +82,8 @@ export default function AdminProductsPage() {
         promo_ends_at: "",
     });
 
+    const [imageUrl, setImageUrl] = useState("");
+
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: "asc",
@@ -106,7 +108,6 @@ export default function AdminProductsPage() {
             if (aValue === null || aValue === undefined) aValue = "";
             if (bValue === null || bValue === undefined) bValue = "";
 
-            // Gestion des catégories, sous-catégories et sous-sous-catégories (objets avec propriété name)
             if (
                 (key === "category" ||
                     key === "subcategory" ||
@@ -273,6 +274,7 @@ export default function AdminProductsPage() {
             promo_starts_at: "",
             promo_ends_at: "",
         });
+        setImageUrl("");
         setSubcategories([]);
         setSubSubcategories([]);
         setIsModalOpen(true);
@@ -281,6 +283,14 @@ export default function AdminProductsPage() {
     const handleEditProduct = (product) => {
         setIsEditMode(true);
         setEditingProductId(product.id);
+
+        const productImages =
+            product.images && product.images.length > 0
+                ? product.images
+                : product.image
+                ? [product.image]
+                : [];
+
         setFormData({
             name: product.name,
             description: product.description || "",
@@ -290,10 +300,14 @@ export default function AdminProductsPage() {
             category_id: product.category_id || "",
             subcategory_id: product.subcategory_id || "",
             sub_subcategory_id: product.sub_subcategory_id || "",
-            images: product.images || [],
+            images: productImages,
             discount_percentage: product.discount_percentage || "",
-            promo_starts_at: product.promo_starts_at ? product.promo_starts_at.substring(0, 16) : "",
-            promo_ends_at: product.promo_ends_at ? product.promo_ends_at.substring(0, 16) : "",
+            promo_starts_at: product.promo_starts_at
+                ? product.promo_starts_at.substring(0, 16)
+                : "",
+            promo_ends_at: product.promo_ends_at
+                ? product.promo_ends_at.substring(0, 16)
+                : "",
         });
 
         if (product.category_id) {
@@ -311,6 +325,7 @@ export default function AdminProductsPage() {
         setIsEditMode(false);
         setEditingProductId(null);
         setMessage("");
+        setImageUrl("");
     };
 
     const handleDeleteProduct = async (productId) => {
@@ -432,6 +447,29 @@ export default function AdminProductsPage() {
         });
     };
 
+    const handleAddImageUrl = () => {
+        if (imageUrl.trim() && isValidUrl(imageUrl.trim())) {
+            setFormData({
+                ...formData,
+                images: [...formData.images, imageUrl.trim()],
+            });
+            setImageUrl("");
+        } else {
+            showToast("Veuillez entrer une URL d'image valide", "error");
+        }
+    };
+
+    const isValidUrl = (string) => {
+        try {
+            new URL(string);
+            return (
+                string.startsWith("http://") || string.startsWith("https://")
+            );
+        } catch (_) {
+            return false;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -443,12 +481,38 @@ export default function AdminProductsPage() {
                 : "http://localhost:8000/api/admin/products";
 
             const submitData = new FormData();
+
+            console.log("FormData images avant traitement:", formData.images);
+
             Object.keys(formData).forEach((key) => {
                 if (formData[key] !== null && formData[key] !== "") {
                     if (key === "images" && formData[key].length > 0) {
-                        formData[key].forEach((image, index) => {
+                        const newImages = formData[key].filter(
+                            (image) => image instanceof File
+                        );
+                        const existingImages = formData[key].filter(
+                            (image) => typeof image === "string"
+                        );
+
+                        console.log(
+                            "Nouvelles images (File objects):",
+                            newImages
+                        );
+                        console.log(
+                            "Images existantes (strings):",
+                            existingImages
+                        );
+
+                        newImages.forEach((image, index) => {
                             submitData.append(`images[${index}]`, image);
                         });
+
+                        if (existingImages.length > 0) {
+                            submitData.append(
+                                "existing_images",
+                                JSON.stringify(existingImages)
+                            );
+                        }
                     } else if (key !== "images") {
                         submitData.append(key, formData[key]);
                     }
@@ -739,7 +803,9 @@ export default function AdminProductsPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="discount_percentage">Remise (%)</Label>
+                                        <Label htmlFor="discount_percentage">
+                                            Remise (%)
+                                        </Label>
                                         <Input
                                             type="number"
                                             id="discount_percentage"
@@ -752,7 +818,9 @@ export default function AdminProductsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="promo_starts_at">Début promo</Label>
+                                        <Label htmlFor="promo_starts_at">
+                                            Début promo
+                                        </Label>
                                         <Input
                                             type="datetime-local"
                                             id="promo_starts_at"
@@ -762,7 +830,9 @@ export default function AdminProductsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="promo_ends_at">Fin promo</Label>
+                                        <Label htmlFor="promo_ends_at">
+                                            Fin promo
+                                        </Label>
                                         <Input
                                             type="datetime-local"
                                             id="promo_ends_at"
@@ -884,10 +954,31 @@ export default function AdminProductsPage() {
                                         multiple
                                         onChange={handleChange}
                                     />
+
+                                    <div className="flex gap-2">
+                                        <Input
+                                            type="url"
+                                            placeholder="https://exemple.com/image.jpg"
+                                            value={imageUrl}
+                                            onChange={(e) =>
+                                                setImageUrl(e.target.value)
+                                            }
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleAddImageUrl}
+                                            disabled={!imageUrl.trim()}
+                                        >
+                                            Ajouter URL
+                                        </Button>
+                                    </div>
+
                                     <p className="text-xs text-gray-500">
                                         Vous pouvez sélectionner plusieurs
-                                        images. La première image sera l'image
-                                        principale.
+                                        images ou ajouter des URLs d'images. La
+                                        première image sera l'image principale.
                                     </p>
 
                                     {formData.images.length > 0 && (
@@ -918,12 +1009,26 @@ export default function AdminProductsPage() {
                                                                     />
                                                                 ) : (
                                                                     <img
-                                                                        src={`http://localhost:8000${image}`}
+                                                                        src={
+                                                                            image.startsWith(
+                                                                                "http"
+                                                                            )
+                                                                                ? image
+                                                                                : `http://localhost:8000${image}`
+                                                                        }
                                                                         alt={`Image ${
                                                                             index +
                                                                             1
                                                                         }`}
                                                                         className="w-full h-full object-cover"
+                                                                        onError={(
+                                                                            e
+                                                                        ) => {
+                                                                            e.target.style.display =
+                                                                                "none";
+                                                                            e.target.parentElement.innerHTML =
+                                                                                '<div class="w-full h-full flex items-center justify-center text-red-400 text-xs">Erreur</div>';
+                                                                        }}
                                                                     />
                                                                 )}
                                                             </div>
@@ -1187,55 +1292,80 @@ export default function AdminProductsPage() {
                                                 {product.id}
                                             </TableCell>
                                             <TableCell>
-                                                {product.images &&
-                                                product.images.length > 0 ? (
-                                                    <div className="flex gap-1">
-                                                        {product.images
-                                                            .slice(0, 3)
-                                                            .map(
-                                                                (
-                                                                    image,
-                                                                    index
-                                                                ) => (
-                                                                    <div
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden"
-                                                                    >
-                                                                        <img
-                                                                            src={`http://localhost:8000${image}`}
-                                                                            alt={`${
-                                                                                product.name
-                                                                            } ${
-                                                                                index +
-                                                                                1
-                                                                            }`}
-                                                                            className="w-full h-full object-cover"
-                                                                        />
-                                                                        {index ===
-                                                                            0 && (
-                                                                            <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-br">
-                                                                                P
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )
+                                                {(() => {
+                                                    const productImages =
+                                                        product.images &&
+                                                        product.images.length >
+                                                            0
+                                                            ? product.images
+                                                            : product.image
+                                                            ? [product.image]
+                                                            : [];
+
+                                                    return productImages.length >
+                                                        0 ? (
+                                                        <div className="flex gap-1">
+                                                            {productImages
+                                                                .slice(0, 3)
+                                                                .map(
+                                                                    (
+                                                                        image,
+                                                                        index
+                                                                    ) => (
+                                                                        <div
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-12 h-12 relative bg-gray-50 rounded-md border overflow-hidden"
+                                                                        >
+                                                                            <img
+                                                                                src={
+                                                                                    image.startsWith(
+                                                                                        "http"
+                                                                                    )
+                                                                                        ? image
+                                                                                        : `http://localhost:8000${image}`
+                                                                                }
+                                                                                alt={`${
+                                                                                    product.name
+                                                                                } ${
+                                                                                    index +
+                                                                                    1
+                                                                                }`}
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    e.target.style.display =
+                                                                                        "none";
+                                                                                    e.target.parentElement.innerHTML =
+                                                                                        '<div class="w-full h-full flex items-center justify-center text-red-400"><span>⚠</span></div>';
+                                                                                }}
+                                                                            />
+                                                                            {index ===
+                                                                                0 && (
+                                                                                <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-br">
+                                                                                    P
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                )}
+                                                            {productImages.length >
+                                                                3 && (
+                                                                <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center text-xs text-gray-500">
+                                                                    +
+                                                                    {productImages.length -
+                                                                        3}
+                                                                </div>
                                                             )}
-                                                        {product.images.length >
-                                                            3 && (
-                                                            <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center text-xs text-gray-500">
-                                                                +
-                                                                {product.images
-                                                                    .length - 3}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                                                        <Image className="h-6 w-6 text-gray-400" />
-                                                    </div>
-                                                )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                                                            <Image className="h-6 w-6 text-gray-400" />
+                                                        </div>
+                                                    );
+                                                })()}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {product.name}
@@ -1250,11 +1380,18 @@ export default function AdminProductsPage() {
                                                             {product.price}€
                                                         </span>
                                                         <span className="text-green-600 font-bold">
-                                                            {product.current_price}€
+                                                            {
+                                                                product.current_price
+                                                            }
+                                                            €
                                                         </span>
                                                         {product.discount_percentage && (
                                                             <Badge variant="destructive">
-                                                                -{product.discount_percentage}%
+                                                                -
+                                                                {
+                                                                    product.discount_percentage
+                                                                }
+                                                                %
                                                             </Badge>
                                                         )}
                                                     </div>

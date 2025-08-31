@@ -66,27 +66,35 @@ class ProductController extends Controller
             'subcategory_id' => 'nullable|integer|exists:subcategories,id',
             'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images' => 'nullable|string',
             'discount_percentage' => 'nullable|integer|min:1|max:90',
             'promo_starts_at' => 'nullable|date',
             'promo_ends_at' => 'nullable|date|after_or_equal:promo_starts_at',
         ]);
 
         try {
-            $images = [];
+            $finalImages = [];
+            
+            if ($request->has('existing_images')) {
+                $existingImages = json_decode($request->input('existing_images'), true);
+                if (is_array($existingImages)) {
+                    $finalImages = $existingImages;
+                }
+            }
             
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $imageName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
                     $image->move(public_path('products'), $imageName);
-                    $images[] = '/products/' . $imageName;
+                    $finalImages[] = '/products/' . $imageName;
                 }
             }
             
-            $validated['images'] = $images;
+            $validated['images'] = $finalImages;
             
             // Garder la première image comme image principale pour compatibilité
-            if (!empty($images)) {
-                $validated['image'] = $images[0];
+            if (!empty($finalImages)) {
+                $validated['image'] = $finalImages[0];
             }
 
             $product = Product::create($validated);
@@ -112,6 +120,8 @@ class ProductController extends Controller
             'subcategory_id' => 'nullable|integer|exists:subcategories,id',
             'sub_subcategory_id' => 'nullable|integer|exists:sub_subcategories,id',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images' => 'nullable|string',
+            'image_urls' => 'nullable|string',
             'discount_percentage' => 'nullable|integer|min:1|max:90',
             'promo_starts_at' => 'nullable|date',
             'promo_ends_at' => 'nullable|date|after_or_equal:promo_starts_at',
@@ -119,31 +129,34 @@ class ProductController extends Controller
 
         try {
             $product = Product::findOrFail($id);
-            $newImages = [];
+            $finalImages = [];
+            
+            if ($request->has('existing_images')) {
+                $existingImages = json_decode($request->input('existing_images'), true);
+                if (is_array($existingImages)) {
+                    $finalImages = $existingImages;
+                }
+            }
+            
+            if ($request->has('image_urls')) {
+                $imageUrls = json_decode($request->input('image_urls'), true);
+                if (is_array($imageUrls)) {
+                    $finalImages = array_merge($finalImages, $imageUrls);
+                }
+            }
             
             if ($request->hasFile('images')) {
-                // Supprimer les anciennes images
-                if ($product->images) {
-                    foreach ($product->images as $oldImage) {
-                        if (file_exists(public_path($oldImage))) {
-                            unlink(public_path($oldImage));
-                        }
-                    }
-                }
-                
-                // Traiter les nouvelles images
                 foreach ($request->file('images') as $image) {
                     $imageName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9\-_.]/', '', $image->getClientOriginalName());
                     $image->move(public_path('products'), $imageName);
-                    $newImages[] = '/products/' . $imageName;
+                    $finalImages[] = '/products/' . $imageName;
                 }
+            }
+            
+            if (!empty($finalImages)) {
+                $validated['images'] = $finalImages;
                 
-                $validated['images'] = $newImages;
-                
-                // Mettre à jour l'image principale
-                if (!empty($newImages)) {
-                    $validated['image'] = $newImages[0];
-                }
+                $validated['image'] = $finalImages[0];
             }
             
             $product->update($validated);
