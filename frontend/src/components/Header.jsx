@@ -36,7 +36,7 @@ export default function Header() {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-8">
-                        <Link href="/">
+                        <Link href="/shop">
                             <img className="h-10" src="/logo-crop.png" alt="" />
                         </Link>
                     </div>
