@@ -548,6 +548,47 @@ export default function AdminProductsPage() {
         });
     };
 
+    const handleDeleteImageFromBackend = async (productId, imageToDelete) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/admin/products/${productId}/image`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ image: imageToDelete }),
+                }
+            );
+
+            if (response.ok) {
+                showToast("Image supprimée avec succès !");
+                await fetchProducts(); // Recharger la liste des produits
+
+                // Mettre à jour le formData si on est en mode édition
+                if (isEditMode && editingProductId === productId) {
+                    setFormData((prev) => ({
+                        ...prev,
+                        images: prev.images.filter(
+                            (img) => img !== imageToDelete
+                        ),
+                    }));
+                }
+            } else {
+                const errorData = await response.json();
+                showToast(
+                    errorData.message ||
+                        "Erreur lors de la suppression de l'image",
+                    "error"
+                );
+            }
+        } catch (error) {
+            console.error("Erreur lors de la suppression de l'image:", error);
+            showToast("Erreur de connexion lors de la suppression", "error");
+        }
+    };
+
     const handleImageReorder = (fromIndex, toIndex) => {
         const newImages = [...formData.images];
         const [removed] = newImages.splice(fromIndex, 1);
@@ -1231,15 +1272,29 @@ export default function AdminProductsPage() {
                                                             (image, index) => (
                                                                 <div
                                                                     key={index}
-                                                                    className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden"
+                                                                    className="w-24 h-24 relative bg-gray-50 rounded-md border overflow-hidden group"
                                                                 >
                                                                     <img
-                                                                        src={`http://localhost:8000${image}`}
+                                                                        src={
+                                                                            image.startsWith(
+                                                                                "http"
+                                                                            )
+                                                                                ? image
+                                                                                : `http://localhost:8000${image}`
+                                                                        }
                                                                         alt={`Image actuelle ${
                                                                             index +
                                                                             1
                                                                         }`}
                                                                         className="w-full h-full object-cover"
+                                                                        onError={(
+                                                                            e
+                                                                        ) => {
+                                                                            e.target.style.display =
+                                                                                "none";
+                                                                            e.target.parentElement.innerHTML =
+                                                                                '<div class="w-full h-full flex items-center justify-center text-red-400 text-xs">Erreur</div>';
+                                                                        }}
                                                                     />
                                                                     {index ===
                                                                         0 && (
@@ -1247,10 +1302,28 @@ export default function AdminProductsPage() {
                                                                             Principale
                                                                         </div>
                                                                     )}
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleDeleteImageFromBackend(
+                                                                                editingProductId,
+                                                                                image
+                                                                            )
+                                                                        }
+                                                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        title="Supprimer cette image définitivement"
+                                                                    >
+                                                                        ×
+                                                                    </button>
                                                                 </div>
                                                             )
                                                         )}
                                                 </div>
+                                                <p className="text-xs text-yellow-600 mt-2">
+                                                    ⚠️ Cliquer sur le "×"
+                                                    supprime définitivement
+                                                    l'image du serveur.
+                                                </p>
                                             </div>
                                         )}
                                 </div>

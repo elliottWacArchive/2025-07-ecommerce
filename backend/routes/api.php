@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::post('/admin/products', [ProductController::class, 'store']);
     Route::put('/admin/products/{id}', [ProductController::class, 'update']);
     Route::post('/admin/products/{id}/update', [ProductController::class, 'update']); // Route pour FormData
+    Route::delete('/admin/products/{id}/image', [ProductController::class, 'deleteImage']); // Route pour supprimer une image spécifique
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/admin/categories', [CategoryController::class, 'index']);
     Route::post('/admin/categories', [CategoryController::class, 'store']);
