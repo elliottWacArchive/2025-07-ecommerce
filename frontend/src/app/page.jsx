@@ -9,9 +9,10 @@ export default function Home() {
     const router = useRouter();
 
     const images = [
-        "/images/carousel1.jpg",
-        "/images/carousel2.jpg",
-        "/images/carousel3.jpg",
+        "/images/homepage/cremes.jpg",
+        "/images/homepage/parfums.webp",
+        "/images/homepage/savons.jpg",
+        "/images/homepage/parfums2.jpeg",
     ];
     const [current, setCurrent] = useState(0);
 
@@ -69,7 +70,7 @@ export default function Home() {
                         className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 text-center cursor-pointer"
                     >
                         <Image
-                            src="/images/parfums.jpg"
+                            src="/images/homepage/parfums.webp"
                             alt="Parfums"
                             width={400}
                             height={250}
@@ -87,7 +88,7 @@ export default function Home() {
                         className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 text-center cursor-pointer"
                     >
                         <Image
-                            src="/images/rituels.jpg"
+                            src="/images/homepage/cremes.jpg"
                             alt="Rituels beauté"
                             width={400}
                             height={250}
@@ -103,7 +104,7 @@ export default function Home() {
                         className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 text-center cursor-pointer"
                     >
                         <Image
-                            src="/images/soins.jpg"
+                            src="/images/homepage/savons.jpg"
                             alt="Soins naturels"
                             width={400}
                             height={250}
@@ -162,7 +163,7 @@ export default function Home() {
                         className="bg-white shadow rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition"
                     >
                         <Image
-                            src="/images/engagements.jpg"
+                            src="/images/homepage/engagements.jpg"
                             alt="Nos engagements"
                             width={400}
                             height={250}
@@ -185,7 +186,7 @@ export default function Home() {
                         className="bg-white shadow rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition"
                     >
                         <Image
-                            src="/images/valeurs.jpg"
+                            src="/images/homepage/valeurs.jpg"
                             alt="Nos valeurs"
                             width={400}
                             height={250}
@@ -208,7 +209,7 @@ export default function Home() {
                         className="bg-white shadow rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition"
                     >
                         <Image
-                            src="/images/histoire.jpg"
+                            src="/images/homepage/histoire.jpg"
                             alt="Notre histoire"
                             width={400}
                             height={250}
@@ -231,7 +232,7 @@ export default function Home() {
             <section className="w-full bg-[#E9E5FF]">
                 <div className="relative w-full h-64 md:h-80">
                     <Image
-                        src="/images/banniere.jpeg"
+                        src="/images/homepage/banniere.png"
                         alt="Bannière promotionnelle"
                         fill
                         className="object-cover"
