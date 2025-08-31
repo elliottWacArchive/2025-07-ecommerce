@@ -128,10 +128,11 @@ class AuthController extends Controller
         ], 200);
     }
 
-        public function updateCredentials(Request $request)
+    public function updateCredentials(Request $request)
     {
         $user = $request->user(); 
         $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed', 
         ]);
@@ -141,6 +142,10 @@ class AuthController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
+        }
+
+        if ($request->filled('name')) {
+            $user->name = $request->name;
         }
 
         if ($request->filled('email')) {

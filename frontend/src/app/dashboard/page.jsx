@@ -9,6 +9,7 @@ export default function Dashboard() {
     const { user, logout, loading, setUser } = useAuth();
     const router = useRouter();
     const [showModal, setShowModal] = useState(false);
+    const [name, setName] = useState(user?.name || "");
     const [email, setEmail] = useState(user?.email || "");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -18,6 +19,10 @@ export default function Dashboard() {
     useEffect(() => {
         if (!loading && !user) {
             router.push("/login");
+        }
+        if (user) {
+            setName(user.name || "");
+            setEmail(user.email || "");
         }
     }, [user, loading, router]);
 
@@ -42,6 +47,7 @@ export default function Dashboard() {
                         )}`,
                     },
                     body: JSON.stringify({
+                        name,
                         email,
                         password,
                         password_confirmation: passwordConfirm,
@@ -57,12 +63,27 @@ export default function Dashboard() {
             } else {
                 setSuccess("Mise à jour réussie ✅");
                 setUser(data.user);
-                setShowModal(false);
+                setPassword("");
+                setPasswordConfirm("");
+                setTimeout(() => {
+                    setShowModal(false);
+                    setSuccess("");
+                }, 1500);
             }
         } catch (err) {
             console.error("Erreur réseau :", err);
             setError(err.message || "Erreur inconnue");
         }
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setName(user?.name || "");
+        setEmail(user?.email || "");
+        setPassword("");
+        setPasswordConfirm("");
+        setError("");
+        setSuccess("");
     };
 
     if (loading) {
@@ -152,6 +173,13 @@ export default function Dashboard() {
                         {success && <p className="text-green-500">{success}</p>}
 
                         <input
+                            type="text"
+                            placeholder="Nouveau nom d'utilisateur"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full border rounded-lg p-2"
+                        />
+                        <input
                             type="email"
                             placeholder="Nouvel email"
                             value={email}
@@ -175,7 +203,7 @@ export default function Dashboard() {
 
                         <div className="flex justify-end space-x-3">
                             <button
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                                 className="bg-gray-300 px-4 py-2 rounded-lg"
                             >
                                 Annuler
