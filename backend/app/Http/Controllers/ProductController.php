@@ -24,6 +24,7 @@ class ProductController extends Controller
         }
 
         $products = $query->get();
+        // Expose computed attributes
         $products->each(function ($p) { $p->append(['is_on_promo', 'current_price']); });
         return response()->json($products);
     }
@@ -128,8 +129,6 @@ class ProductController extends Controller
 
         try {
             $product = Product::findOrFail($id);
-            
-            $oldImages = $product->images ?: [];
             $finalImages = [];
             
             if ($request->has('existing_images')) {
@@ -154,23 +153,10 @@ class ProductController extends Controller
                 }
             }
             
-            if (is_array($oldImages)) {
-                foreach ($oldImages as $oldImage) {
-                    if (!in_array($oldImage, $finalImages) && !str_starts_with($oldImage, 'http')) {
-                        $imagePath = public_path($oldImage);
-                        if (file_exists($imagePath)) {
-                            unlink($imagePath);
-                        }
-                    }
-                }
-            }
-            
-            $validated['images'] = $finalImages;
-            
             if (!empty($finalImages)) {
+                $validated['images'] = $finalImages;
+                
                 $validated['image'] = $finalImages[0];
-            } else {
-                $validated['image'] = null;
             }
             
             $product->update($validated);
@@ -185,53 +171,6 @@ class ProductController extends Controller
         }
     }
 
-    public function deleteImage(Request $request, $id)
-    {
-        try {
-            $product = Product::findOrFail($id);
-            $imageToDelete = $request->input('image');
-            
-            if (!$imageToDelete) {
-                return response()->json(['message' => 'Image non spécifiée'], 400);
-            }
-            
-            $images = $product->images ?: [];
-            
-            if (!in_array($imageToDelete, $images)) {
-                return response()->json(['message' => 'Image non trouvée pour ce produit'], 404);
-            }
-            
-            $updatedImages = array_values(array_filter($images, function($img) use ($imageToDelete) {
-                return $img !== $imageToDelete;
-            }));
-            
-            if (!str_starts_with($imageToDelete, 'http')) {
-                $imagePath = public_path($imageToDelete);
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
-            }
-            
-            $product->images = $updatedImages;
-            
-            if ($product->image === $imageToDelete) {
-                $product->image = !empty($updatedImages) ? $updatedImages[0] : null;
-            }
-            
-            $product->save();
-            
-            return response()->json([
-                'message' => 'Image supprimée avec succès',
-                'product' => $product->load(['category', 'subcategory', 'subSubcategory'])
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la suppression de l\'image',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function destroy($id)
     {
         try {
@@ -239,17 +178,6 @@ class ProductController extends Controller
             
             if ($product->image && file_exists(public_path($product->image))) {
                 unlink(public_path($product->image));
-            }
-            
-            if ($product->images && is_array($product->images)) {
-                foreach ($product->images as $image) {
-                    if (!str_starts_with($image, 'http')) {
-                        $imagePath = public_path($image);
-                        if (file_exists($imagePath)) {
-                            unlink($imagePath);
-                        }
-                    }
-                }
             }
             
             $product->delete();
